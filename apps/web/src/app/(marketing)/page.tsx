@@ -13,15 +13,15 @@ export default function LandingPage() {
             <span className="text-2xl">✏️</span>
             <span className="text-xl font-bold text-gray-900">WriteRight <span className="text-blue-600">SG</span></span>
           </Link>
-          <nav className="flex items-center gap-2 sm:gap-4">
-            <Link href="/login" className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">
+          <nav className="flex items-center gap-1.5 sm:gap-3">
+            <Link href="/login" className="whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">
               Log in
             </Link>
             <Link
               href="/register"
-              className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
+              className="whitespace-nowrap rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors sm:px-4 sm:py-2.5 sm:text-sm"
             >
-              Get Started Free
+              Start Free
             </Link>
           </nav>
         </div>
