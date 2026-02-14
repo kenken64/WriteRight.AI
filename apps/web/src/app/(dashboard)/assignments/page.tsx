@@ -42,10 +42,17 @@ export default async function AssignmentsPage() {
             </Link>
           ))
         ) : (
-          <div className="rounded-lg border bg-white p-12 text-center">
-            <p className="text-muted-foreground">No assignments yet.</p>
-            <Link href="/assignments/new" className="mt-2 inline-block text-sm text-primary hover:underline">
-              Create your first assignment →
+          <div className="flex flex-col items-center justify-center rounded-2xl border bg-white py-20 px-6 text-center animate-fade-in">
+            <span className="text-6xl">✏️</span>
+            <h3 className="mt-6 text-xl font-bold text-gray-900">Start your writing journey</h3>
+            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+              Create your first assignment and begin improving your essay skills with AI-powered feedback.
+            </p>
+            <Link
+              href="/assignments/new"
+              className="mt-6 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 transition-colors"
+            >
+              Create your first assignment
             </Link>
           </div>
         )}

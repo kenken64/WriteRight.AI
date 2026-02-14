@@ -73,14 +73,32 @@ export default function WishlistPage() {
         </div>
       )}
 
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
-        {items?.map((item) => (
-          <WishlistCard
-            key={item.id}
-            item={item}
-            onClaim={async () => { claimReward.mutate(item.id); }}
-          />
-        ))}
+      <div className="mt-6">
+        {items && items.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-2">
+            {items.map((item) => (
+              <WishlistCard
+                key={item.id}
+                item={item}
+                onClaim={async () => { claimReward.mutate(item.id); }}
+              />
+            ))}
+          </div>
+        ) : !showAdd ? (
+          <div className="flex flex-col items-center justify-center rounded-2xl border bg-white py-20 px-6 text-center animate-fade-in">
+            <span className="text-6xl">🎁</span>
+            <h3 className="mt-6 text-xl font-bold text-gray-900">Build your wish list</h3>
+            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+              Add rewards you&apos;d like to earn. Your parent can link them to achievements as motivation!
+            </p>
+            <button
+              onClick={() => setShowAdd(true)}
+              className="mt-6 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 transition-colors"
+            >
+              Add your first wish
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );

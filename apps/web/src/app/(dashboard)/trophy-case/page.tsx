@@ -34,10 +34,11 @@ export default async function TrophyCasePage() {
             />
           ))
         ) : (
-          <div className="col-span-full rounded-lg border bg-white p-12 text-center">
-            <p className="text-4xl">🏆</p>
-            <p className="mt-4 text-muted-foreground">
-              Your trophy case is empty. Keep earning achievements to get rewards!
+          <div className="col-span-full flex flex-col items-center justify-center rounded-2xl border bg-white py-20 px-6 text-center animate-fade-in">
+            <span className="text-6xl">🏅</span>
+            <h3 className="mt-6 text-xl font-bold text-gray-900">Your trophy case is empty</h3>
+            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+              Keep earning achievements and claiming rewards — they&apos;ll all be displayed here!
             </p>
           </div>
         )}

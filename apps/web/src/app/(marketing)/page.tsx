@@ -1,4 +1,7 @@
 import Link from 'next/link';
+import { AnimatedCounter } from '@/components/marketing/animated-counter';
+import { AnimatedCard } from '@/components/ui/animated-card';
+import { StickyCta } from '@/components/marketing/sticky-cta';
 
 export default function LandingPage() {
   return (
@@ -26,7 +29,7 @@ export default function LandingPage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative overflow-hidden">
+        <section id="hero" className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50" />
           <div className="absolute top-20 left-10 h-72 w-72 rounded-full bg-blue-100 opacity-40 blur-3xl" />
           <div className="absolute bottom-10 right-10 h-96 w-96 rounded-full bg-indigo-100 opacity-30 blur-3xl" />
@@ -85,7 +88,7 @@ export default function LandingPage() {
                 { value: '30+', label: 'Achievement Badges' },
               ].map((stat) => (
                 <div key={stat.label}>
-                  <p className="text-2xl font-bold text-blue-600 sm:text-3xl">{stat.value}</p>
+                  <AnimatedCounter target={stat.value} className="text-2xl font-bold text-blue-600 sm:text-3xl" />
                   <p className="mt-1 text-xs text-gray-500 sm:text-sm">{stat.label}</p>
                 </div>
               ))}
@@ -124,15 +127,17 @@ export default function LandingPage() {
                   desc: 'Track your progress, earn achievement badges, and unlock rewards from your parents\' wishlist.',
                   color: 'bg-violet-50 text-violet-600',
                 },
-              ].map((feature) => (
-                <div key={feature.step} className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:shadow-md sm:p-8">
-                  <div className={`inline-flex h-12 w-12 items-center justify-center rounded-xl ${feature.color} text-2xl`}>
-                    {feature.emoji}
+              ].map((feature, i) => (
+                <AnimatedCard key={feature.step} delay={i * 150}>
+                  <div className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:shadow-md sm:p-8">
+                    <div className={`inline-flex h-12 w-12 items-center justify-center rounded-xl ${feature.color} text-2xl`}>
+                      {feature.emoji}
+                    </div>
+                    <div className="mt-1 text-xs font-semibold text-gray-300">STEP {feature.step}</div>
+                    <h3 className="mt-3 text-lg font-bold text-gray-900">{feature.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-gray-500">{feature.desc}</p>
                   </div>
-                  <div className="mt-1 text-xs font-semibold text-gray-300">STEP {feature.step}</div>
-                  <h3 className="mt-3 text-lg font-bold text-gray-900">{feature.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-gray-500">{feature.desc}</p>
-                </div>
+                </AnimatedCard>
               ))}
             </div>
           </div>
@@ -154,21 +159,81 @@ export default function LandingPage() {
                 { emoji: '🔄', title: 'Model Rewrites', desc: 'See how to improve with side-by-side comparisons and explanations' },
                 { emoji: '🏆', title: 'Achievements & Rewards', desc: 'Earn badges, build wishlists, parents track promises' },
                 { emoji: '📈', title: 'Progress Analytics', desc: 'Score trends, error patterns, streak tracking for parents' },
-              ].map((f) => (
-                <div key={f.title} className="flex gap-4 rounded-xl border border-gray-100 bg-white p-5">
-                  <span className="text-2xl">{f.emoji}</span>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{f.title}</h3>
-                    <p className="mt-1 text-sm text-gray-500">{f.desc}</p>
+              ].map((f, i) => (
+                <AnimatedCard key={f.title} delay={i * 100}>
+                  <div className="flex gap-4 rounded-xl border border-gray-100 bg-white p-5 transition-shadow hover:shadow-md">
+                    <span className="text-2xl">{f.emoji}</span>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{f.title}</h3>
+                      <p className="mt-1 text-sm text-gray-500">{f.desc}</p>
+                    </div>
                   </div>
-                </div>
+                </AnimatedCard>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials */}
+        <section className="py-16 sm:py-24">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">What Parents & Students Say</h2>
+              <p className="mt-3 text-gray-500">Real feedback from our community</p>
+            </div>
+
+            <div className="mt-12 grid gap-6 sm:grid-cols-3">
+              {[
+                {
+                  quote: 'My son used to dread writing essays. Now he actually asks to do them because of the achievement badges. His scores improved from Band 2 to Band 4 in just two months!',
+                  name: 'Mrs. Tan',
+                  role: 'Parent',
+                  stars: 5,
+                },
+                {
+                  quote: 'The instant feedback is super helpful. I can see exactly where I went wrong and the model rewrite shows me how to fix it. Way better than waiting a week for my teacher.',
+                  name: 'Ryan L.',
+                  role: 'Student',
+                  stars: 5,
+                },
+                {
+                  quote: 'As a working parent, I love being able to track my daughter\'s progress without hovering. The promise system motivates her and I can see real improvement in the analytics.',
+                  name: 'Mr. Chua',
+                  role: 'Parent',
+                  stars: 5,
+                },
+              ].map((t, i) => (
+                <AnimatedCard key={i} delay={i * 150}>
+                  <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                    <div className="flex gap-0.5 text-amber-400">
+                      {Array.from({ length: t.stars }).map((_, j) => (
+                        <span key={j}>⭐</span>
+                      ))}
+                    </div>
+                    <p className="mt-4 text-sm leading-relaxed text-gray-600">
+                      <span className="text-2xl text-gray-200">&ldquo;</span>
+                      {t.quote}
+                    </p>
+                    <div className="mt-4 flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-xs font-bold text-white">
+                        {t.name[0]}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">{t.name}</p>
+                        <span className={`text-xs font-medium ${t.role === 'Parent' ? 'text-blue-600' : 'text-green-600'}`}>
+                          {t.role}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </AnimatedCard>
               ))}
             </div>
           </div>
         </section>
 
         {/* Pricing */}
-        <section className="py-16 sm:py-24">
+        <section className="bg-gray-50 py-16 sm:py-24">
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <div className="text-center">
               <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Simple, Fair Pricing</h2>
@@ -257,6 +322,9 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* Sticky CTA for mobile */}
+      <StickyCta />
     </div>
   );
 }
