@@ -25,9 +25,10 @@ const iconMap: Record<string, React.ElementType> = {
 interface SidebarProps {
   role: UserRole;
   userEmail: string;
+  children?: React.ReactNode;
 }
 
-export function DashboardSidebar({ role, userEmail }: SidebarProps) {
+export function DashboardSidebar({ role, userEmail, children }: SidebarProps) {
   const pathname = usePathname();
   const navItems = getNavForRole(role);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -90,11 +91,11 @@ export function DashboardSidebar({ role, userEmail }: SidebarProps) {
         })}
       </nav>
 
-      <div className="border-t p-3">
+      <div className="mt-auto border-t p-3 pb-[env(safe-area-inset-bottom,12px)]">
         <form action="/api/v1/auth/logout" method="POST">
           <button
             type="submit"
-            className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground min-h-[44px]"
+            className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm text-red-500 hover:bg-red-50 hover:text-red-700 min-h-[44px]"
           >
             <LogOut className="h-5 w-5" />
             Log out
@@ -106,14 +107,30 @@ export function DashboardSidebar({ role, userEmail }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile hamburger button - rendered via portal-like approach in layout */}
-      <button
-        onClick={() => setMobileOpen(true)}
-        className="fixed left-3 top-3 z-40 flex h-10 w-10 items-center justify-center rounded-md bg-white shadow-md md:hidden"
-        aria-label="Open menu"
-      >
-        <Menu className="h-5 w-5" />
-      </button>
+      {/* Desktop sidebar - static */}
+      <aside className="hidden h-screen sticky top-0 w-64 flex-shrink-0 flex-col border-r bg-white md:flex">
+        {sidebarContent}
+      </aside>
+
+      {/* Main content area with mobile top bar */}
+      <main className="flex-1 overflow-x-hidden bg-muted/30">
+        {/* Mobile sticky top bar with hamburger */}
+        <div className="sticky top-0 z-30 flex items-center gap-3 border-b bg-white px-4 py-3 md:hidden">
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="flex h-10 w-10 items-center justify-center rounded-md hover:bg-muted"
+            aria-label="Open menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <h1 className="flex-1 text-center text-lg font-bold text-primary">WriteRight SG</h1>
+          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs capitalize text-primary">
+            {role}
+          </span>
+        </div>
+
+        {children}
+      </main>
 
       {/* Mobile overlay backdrop */}
       {mobileOpen && (
@@ -125,15 +142,10 @@ export function DashboardSidebar({ role, userEmail }: SidebarProps) {
 
       {/* Mobile sidebar - slide in */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-white shadow-xl transition-transform duration-300 ease-in-out md:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-[100dvh] w-72 flex-col bg-white shadow-xl transition-transform duration-300 ease-in-out md:hidden ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {sidebarContent}
-      </aside>
-
-      {/* Desktop sidebar - static */}
-      <aside className="hidden w-64 flex-shrink-0 flex-col border-r bg-white md:flex">
         {sidebarContent}
       </aside>
     </>
