@@ -10,7 +10,6 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 border-b bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl">✏️</span>
             <div className="flex items-center gap-2"><img src="/logo.jpg" alt="WriteRight AI" className="h-8 w-8 rounded-full object-cover" /><span className="text-xl font-bold text-gray-900">WriteRight <span className="text-blue-600">SG</span></span></div>
           </Link>
           <nav className="flex items-center gap-1.5 sm:gap-3">
@@ -313,7 +312,6 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
             <div className="flex items-center gap-2">
-              <span className="text-lg">✏️</span>
               <span className="font-semibold text-gray-900">WriteRight SG</span>
             </div>
             <p className="text-sm text-gray-400">

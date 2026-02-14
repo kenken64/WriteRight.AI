@@ -59,7 +59,6 @@ export default function RegisterPage() {
       <div className="hidden lg:flex lg:w-1/2 lg:flex-col lg:justify-between bg-gradient-to-br from-indigo-600 to-blue-700 p-12 text-white">
         <div>
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-3xl">✏️</span>
             <div className="flex items-center gap-3"><img src="/logo.jpg" alt="WriteRight AI" className="h-10 w-10 rounded-full object-cover" /><span className="text-2xl font-bold">WriteRight SG</span></div>
           </Link>
         </div>
@@ -98,7 +97,6 @@ export default function RegisterPage() {
           {/* Mobile logo */}
           <div className="mb-8 lg:hidden">
             <Link href="/" className="flex items-center gap-2">
-              <span className="text-2xl">✏️</span>
               <div className="flex items-center gap-2"><img src="/logo.jpg" alt="WriteRight AI" className="h-8 w-8 rounded-full object-cover" /><span className="text-xl font-bold text-gray-900">WriteRight <span className="text-blue-600">SG</span></span></div>
             </Link>
           </div>
