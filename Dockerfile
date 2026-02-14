@@ -37,7 +37,7 @@ ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 RUN npx turbo run build --filter=@writeright/web
 
 # ── Runner ───────────────────────────────────────────────────────────
-FROM base AS runner
+FROM node:18-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
