@@ -159,6 +159,64 @@ Disagreements happen. Here's how we handle them:
 3. **Disagree and commit** — once decided, everyone supports the decision
 4. **No changes to live products during disputes** — maintain status quo until resolved
 
+### Contradictory Requests & How Similancao Handles Them
+
+Since multiple product owners can request changes through the AI assistant, conflicts **will** happen — sometimes without anyone realising it. Here's the protocol:
+
+**Similancao's rules when receiving a request:**
+
+1. **Check for active/recent contradictions.** Before executing a change, Similancao will check if a recent request from another PO conflicts with it. Examples:
+   - PO A says "change the CTA button to green" → PO B says "change the CTA button to red"
+   - PO A says "remove the testimonials section" → PO B says "add more testimonials"
+   - PO A says "pricing should be $9.90/month" → PO B says "pricing should be $19.90/month"
+
+2. **If a contradiction is detected, Similancao will:**
+   - **Stop** — not execute either change
+   - **Flag it in the group chat** — tag both POs and explain the conflict clearly
+   - **Present both options** with pros/cons if possible
+   - **Wait for alignment** before proceeding
+
+3. **Similancao will NOT:**
+   - Silently overwrite one PO's change with another's
+   - Pick sides or decide which PO is "right"
+   - Execute a change and then undo it when the other PO objects
+   - Implement a "compromise" without explicit agreement from both parties
+
+**Types of conflicts and escalation:**
+
+| Conflict Type | Example | Handling |
+|--------------|---------|----------|
+| **Direct contradiction** | "Add feature X" vs "Don't add feature X" | Stop, flag in group, wait for alignment |
+| **Scope creep collision** | Two POs requesting changes to the same component simultaneously | Execute first-in, flag second request as potentially conflicting |
+| **Strategic disagreement** | "Target tuition centres" vs "Target schools" | Flag as strategic decision, requires all-PO discussion |
+| **Priority conflict** | PO A says P0, PO B says P2 for same item | Flag the disagreement, Kenneth breaks tie |
+| **Version ambiguity** | Change requested without specifying SG/International | Ask for clarification before doing anything |
+
+**The "24-hour rule" for code changes:**
+
+For significant changes (new features, pricing, UX overhauls, content strategy):
+- Similancao will announce the requested change in the group chat
+- Other POs have **24 hours** to object or suggest modifications
+- Silence after 24h = implicit approval
+- Trivial changes (typos, bug fixes, docs) can proceed immediately
+
+**What counts as "significant":**
+- Anything user-facing (UI, copy, pricing, features)
+- Anything that changes business logic
+- Anything that affects both versions
+- Anything irreversible (database migrations, public API changes)
+
+**What's "trivial" (no waiting needed):**
+- Typo fixes
+- Bug fixes for broken functionality
+- Documentation updates
+- Dependency updates
+- Build/CI fixes
+
+**Emergency override:** If something is broken in production, any PO can authorise an immediate fix. Inform the team after.
+
+**Record keeping:** All significant decisions should be logged in a GitHub Issue or Discussion for future reference. Chat messages get buried; issues don't.
+
 ---
 
 ## Review Schedule
