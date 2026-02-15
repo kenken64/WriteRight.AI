@@ -40,11 +40,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     // Step 1: OCR / text extraction if not already done
     let ocrText = submission.ocr_text;
     if (!ocrText) {
-      // Build public URLs for the uploaded files
-      const fileUrls = submission.image_refs.map((ref: string) => {
-        const { data } = admin.storage.from("submissions").getPublicUrl(ref);
-        return data.publicUrl;
-      });
+      // Build signed URLs for the uploaded files (bucket is private)
+      const fileUrls: string[] = [];
+      for (const ref of submission.image_refs as string[]) {
+        const { data, error: urlErr } = await admin.storage
+          .from("submissions")
+          .createSignedUrl(ref, 600); // 10 minute expiry
+        if (urlErr || !data?.signedUrl) {
+          throw new Error(`Failed to create signed URL for ${ref}: ${urlErr?.message ?? "unknown"}`);
+        }
+        fileUrls.push(data.signedUrl);
+      }
 
       // Detect file type from the first file's extension
       const firstRef: string = submission.image_refs[0];
