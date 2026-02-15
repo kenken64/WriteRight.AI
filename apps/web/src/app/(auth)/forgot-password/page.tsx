@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -20,16 +19,22 @@ export default function ForgotPasswordPage() {
     }
 
     setLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
-      setSubmitted(true);
+    try {
+      const res = await fetch('/api/v1/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Something went wrong.');
+        setLoading(false);
+      } else {
+        setSubmitted(true);
+        setLoading(false);
+      }
+    } catch {
+      setError('Network error. Please try again.');
       setLoading(false);
     }
   };
@@ -49,7 +54,7 @@ export default function ForgotPasswordPage() {
             Better essays start<br />with better feedback.
           </h2>
           <p className="mt-4 text-lg text-blue-100 leading-relaxed">
-            AI-powered marking aligned to Singapore&apos;s Singapore secondary school English syllabus. 
+            AI-powered marking aligned to Singapore&apos;s secondary school English syllabus. 
             Get instant, specific feedback that helps you improve.
           </p>
         </div>
@@ -80,7 +85,7 @@ export default function ForgotPasswordPage() {
             <div className="mt-8 space-y-5">
               <div className="flex items-start gap-2 rounded-lg bg-green-50 p-4 text-sm text-green-700">
                 <span className="mt-0.5">✅</span>
-                <span>If an account exists with this email, you&apos;ll receive a reset link shortly.</span>
+                <span>If an account exists with this email, you&apos;ll receive a reset link shortly. Check your inbox (and spam folder).</span>
               </div>
               <Link
                 href="/login"

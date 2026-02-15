@@ -1,12 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
 
 export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><p>Loading...</p></div>}>
+      <ResetPasswordForm />
+    </Suspense>
+  );
+}
+
+function ResetPasswordForm() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,87 +21,25 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [sessionReady, setSessionReady] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // Handle recovery session from multiple flows:
-  // 1. Hash fragments (#access_token=xxx&type=recovery) — implicit flow
-  // 2. Query params (?code=xxx) — PKCE flow
-  // 3. Existing session cookies — came via server callback
   useEffect(() => {
-    const supabase = createClient();
-    let cancelled = false;
-
-    // Listen for auth events (implicit flow hash detection)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
-        if (!cancelled) setSessionReady(true);
-      }
-    });
-
-    async function initSession() {
-      // Check for PKCE code in URL query params
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get('code');
-
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (!error && !cancelled) {
-          setSessionReady(true);
-          // Clean up URL
-          window.history.replaceState({}, '', '/reset-password');
-          return;
-        }
-        if (error) console.error('Code exchange failed:', error.message);
-      }
-
-      // Check for token_hash in URL query params (server-side redirect passthrough)
-      const tokenHash = params.get('token_hash');
-      const type = params.get('type');
-      if (tokenHash && type === 'recovery') {
-        const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
-        if (!error && !cancelled) {
-          setSessionReady(true);
-          window.history.replaceState({}, '', '/reset-password');
-          return;
-        }
-        if (error) console.error('Token verification failed:', error.message);
-      }
-
-      // Check for existing session (came via server callback with cookies)
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user && !cancelled) {
-        setSessionReady(true);
-        return;
-      }
-
-      // If nothing worked after checking everything, wait a bit for hash detection
-      // then show error
-      setTimeout(() => {
-        if (!cancelled) {
-          supabase.auth.getUser().then(({ data: { user } }) => {
-            if (!user && !cancelled) {
-              setError('Reset link expired or already used. Please request a new one.');
-            }
-          });
-        }
-      }, 2000);
+    const t = searchParams.get('token');
+    if (t) {
+      setToken(t);
+    } else {
+      setError('No reset token found. Please request a new reset link.');
     }
-
-    initSession();
-
-    return () => {
-      cancelled = true;
-      subscription.unsubscribe();
-    };
-  }, []);
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!sessionReady) {
-      setError('Auth session missing! Please use a fresh reset link from your email.');
+    if (!token) {
+      setError('No reset token. Please request a new reset link.');
       return;
     }
 
@@ -109,18 +54,25 @@ export default function ResetPasswordPage() {
     }
 
     setLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.updateUser({ password });
+    try {
+      const res = await fetch('/api/v1/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password }),
+      });
+      const data = await res.json();
 
-    if (error) {
-      setError(error.message);
+      if (!res.ok) {
+        setError(data.error || 'Something went wrong.');
+        setLoading(false);
+      } else {
+        setSuccess(true);
+        setLoading(false);
+        setTimeout(() => router.push('/login'), 2000);
+      }
+    } catch {
+      setError('Network error. Please try again.');
       setLoading(false);
-    } else {
-      setSuccess(true);
-      setLoading(false);
-      // Sign out so they can log in with new password
-      await supabase.auth.signOut();
-      setTimeout(() => router.push('/login'), 2000);
     }
   };
 
@@ -139,7 +91,7 @@ export default function ResetPasswordPage() {
             Better essays start<br />with better feedback.
           </h2>
           <p className="mt-4 text-lg text-blue-100 leading-relaxed">
-            AI-powered marking aligned to Singapore&apos;s Singapore secondary school English syllabus. 
+            AI-powered marking aligned to Singapore&apos;s secondary school English syllabus. 
             Get instant, specific feedback that helps you improve.
           </p>
         </div>
@@ -234,7 +186,7 @@ export default function ResetPasswordPage() {
               
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !token}
                 className="w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? (
