@@ -6,6 +6,7 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
   const next = searchParams.get('next') ?? '/assignments';
+  const type = searchParams.get('type');
 
   if (code) {
     const cookieStore = await cookies();
@@ -29,6 +30,10 @@ export async function GET(request: NextRequest) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // If this is a password recovery flow, redirect to reset-password page
+      if (type === 'recovery' || next === '/reset-password') {
+        return NextResponse.redirect(`${origin}/reset-password`);
+      }
       return NextResponse.redirect(`${origin}${next}`);
     }
   }
