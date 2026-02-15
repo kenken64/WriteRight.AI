@@ -42,9 +42,7 @@ export default function NewAssignmentPage() {
       return;
     }
 
-    // TODO: Get student_id from context
     await createAssignment.mutateAsync({
-      student_id: '', // Set from selected student
       essay_type: result.data.essayType,
       essay_sub_type: result.data.essaySubType as any,
       prompt: result.data.prompt,

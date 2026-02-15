@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
     const parsed = createAssignmentSchema.parse(body);
     const { data, error } = await supabase.from("assignments").insert({
       ...parsed,
+      student_id: parsed.student_id || user.id,
       language: "en",
     }).select().single();
 
