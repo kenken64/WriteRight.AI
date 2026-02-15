@@ -21,7 +21,7 @@ export default function NewSubmissionPage() {
     <div className="mx-auto w-full max-w-2xl">
       <h1 className="text-2xl font-bold">Submit Essay</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Upload photos of your handwritten essay. We support up to 8 images per submission.
+        Upload photos, PDFs, or Word documents of your essay. We support up to 8 files per submission.
       </p>
 
       <div className="mt-8">

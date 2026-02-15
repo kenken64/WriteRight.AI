@@ -5,7 +5,7 @@ import { BandProgression } from '@/components/charts/band-progression';
 import { SubmissionFrequency } from '@/components/charts/submission-frequency';
 
 export default async function AnalyticsPage() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const { data: scoreTrend } = await supabase
     .from('student_score_trend')

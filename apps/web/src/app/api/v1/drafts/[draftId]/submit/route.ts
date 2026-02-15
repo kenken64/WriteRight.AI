@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-export async function POST(req: NextRequest, { params }: { params: { draftId: string } }) {
-  const supabase = createServerSupabaseClient();
+export async function POST(req: NextRequest, { params }: { params: Promise<{ draftId: string }> }) {
+  const { draftId } = await params;
+  const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -10,7 +11,7 @@ export async function POST(req: NextRequest, { params }: { params: { draftId: st
   const { data: draft, error: draftErr } = await supabase
     .from("essay_drafts")
     .select("*")
-    .eq("id", params.draftId)
+    .eq("id", draftId)
     .single();
 
   if (draftErr || !draft) return NextResponse.json({ error: "Draft not found" }, { status: 404 });
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest, { params }: { params: { draftId: st
   await supabase
     .from("essay_drafts")
     .update({ status: "submitted", updated_at: new Date().toISOString() })
-    .eq("id", params.draftId);
+    .eq("id", draftId);
 
   // Create submission record
   const { data: submission, error: subErr } = await supabase

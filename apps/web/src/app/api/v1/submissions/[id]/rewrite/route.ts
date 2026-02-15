@@ -3,8 +3,9 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { rewriteEssay } from "@writeright/ai/rewrite/engine";
 import type { EvaluationResult } from "@writeright/ai/shared/types";
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createServerSupabaseClient();
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const { data: submission } = await supabase
     .from("submissions")
     .select("*, assignment:assignments(*), evaluations(*)")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (!submission) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     });
 
     const rewrite = {
-      submission_id: params.id,
+      submission_id: id,
       mode: result.mode,
       rewritten_text: result.rewrittenText,
       diff_payload: result.diffPayload,
@@ -67,11 +68,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 }
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createServerSupabaseClient();
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data } = await supabase.from("rewrites").select("*").eq("submission_id", params.id).order("created_at", { ascending: false });
+  const { data } = await supabase.from("rewrites").select("*").eq("submission_id", id).order("created_at", { ascending: false });
   return NextResponse.json({ rewrites: data ?? [] });
 }

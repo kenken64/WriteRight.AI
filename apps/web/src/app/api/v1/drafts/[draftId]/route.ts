@@ -13,23 +13,25 @@ const updateSchema = z.object({
   status: z.enum(["writing", "paused"]).optional(),
 });
 
-export async function GET(req: NextRequest, { params }: { params: { draftId: string } }) {
-  const supabase = createServerSupabaseClient();
+export async function GET(req: NextRequest, { params }: { params: Promise<{ draftId: string }> }) {
+  const { draftId } = await params;
+  const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data, error } = await supabase
     .from("essay_drafts")
     .select("*")
-    .eq("id", params.draftId)
+    .eq("id", draftId)
     .single();
 
   if (error || !data) return NextResponse.json({ error: "Draft not found" }, { status: 404 });
   return NextResponse.json(data);
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { draftId: string } }) {
-  const supabase = createServerSupabaseClient();
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ draftId: string }> }) {
+  const { draftId } = await params;
+  const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -45,7 +47,7 @@ export async function PUT(req: NextRequest, { params }: { params: { draftId: str
     const { data: draft, error } = await supabase
       .from("essay_drafts")
       .update({ ...input, updated_at: new Date().toISOString() })
-      .eq("id", params.draftId)
+      .eq("id", draftId)
       .select()
       .single();
 
@@ -56,7 +58,7 @@ export async function PUT(req: NextRequest, { params }: { params: { draftId: str
       const { data: latestVersion } = await supabase
         .from("draft_versions")
         .select("version_number")
-        .eq("draft_id", params.draftId)
+        .eq("draft_id", draftId)
         .order("version_number", { ascending: false })
         .limit(1)
         .single();
@@ -64,7 +66,7 @@ export async function PUT(req: NextRequest, { params }: { params: { draftId: str
       const nextVersion = (latestVersion?.version_number ?? 0) + 1;
 
       await supabase.from("draft_versions").insert({
-        draft_id: params.draftId,
+        draft_id: draftId,
         content: input.content,
         word_count: input.word_count ?? 0,
         version_number: nextVersion,

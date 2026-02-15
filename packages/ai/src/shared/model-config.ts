@@ -7,6 +7,9 @@
 /** Primary model for complex tasks: marking, rewriting, coaching, outlines */
 export const MODEL_PRIMARY = process.env.OPENAI_MODEL_PRIMARY ?? "gpt-4o";
 
+/** Higher-quality model for essay evaluation — richer feedback and advice */
+export const MODEL_EVALUATION = process.env.OPENAI_MODEL_EVALUATION ?? "gpt-5";
+
 /** Lightweight model for fast tasks: grammar checking, live scoring, analysis */
 export const MODEL_FAST = process.env.OPENAI_MODEL_FAST ?? "gpt-4o-mini";
 

@@ -3,7 +3,7 @@ import { BadgeWall } from '@/components/achievements/badge-wall';
 import { StreakCounter } from '@/components/achievements/streak-counter';
 
 export default async function AchievementsPage() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const { data: achievements } = await supabase
     .from('achievements')

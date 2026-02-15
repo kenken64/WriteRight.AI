@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireRole, isAuthError } from "@/lib/middleware/rbac";
 
-export async function GET(req: NextRequest, { params }: { params: { parentId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ parentId: string }> }) {
+  const { parentId } = await params;
   const auth = await requireRole(req, 'parent');
   if (isAuthError(auth)) return auth;
 
   // Ensure parent can only see their own dashboard
-  if (auth.user.id !== params.parentId) {
+  if (auth.user.id !== parentId) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { data: students } = await auth.supabase
     .from("student_profiles")
     .select("id, display_name, level")
-    .eq("user_id", params.parentId);
+    .eq("user_id", parentId);
 
   const studentIds = (students ?? []).map((s) => s.id);
   if (!studentIds.length) return NextResponse.json({ students: [], summary: {} });

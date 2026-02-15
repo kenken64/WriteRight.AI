@@ -13,10 +13,8 @@ const nextConfig = {
       },
     ],
   },
-  experimental: {
-    outputFileTracingRoot: path.join(__dirname, '../../'),
-    serverComponentsExternalPackages: ['@google-cloud/vision'],
-  },
+  outputFileTracingRoot: path.join(__dirname, '../../'),
+  serverExternalPackages: ['@google-cloud/vision'],
 };
 
 module.exports = nextConfig;

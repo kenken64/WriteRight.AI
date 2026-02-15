@@ -4,7 +4,7 @@ import { StudentOnboardFlow } from '@/components/onboarding/student-onboard-flow
 import { ParentOnboardFlow } from '@/components/onboarding/parent-onboard-flow';
 
 export default async function OnboardPage() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {

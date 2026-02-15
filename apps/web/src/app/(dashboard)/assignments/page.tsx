@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export default async function AssignmentsPage() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data: assignments } = await supabase
     .from('assignments')
     .select('*, topic:topics(*)')

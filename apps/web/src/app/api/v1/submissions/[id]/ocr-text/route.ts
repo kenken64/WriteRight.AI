@@ -2,23 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { sanitizeInput } from "@/lib/middleware/sanitize";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createServerSupabaseClient();
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data } = await supabase
     .from("submissions")
     .select("id, ocr_text, ocr_confidence, status")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (!data) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ ocrText: data.ocr_text, confidence: data.ocr_confidence, status: data.status });
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createServerSupabaseClient();
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -31,7 +33,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       status: "ocr_complete",
       updated_at: new Date().toISOString(),
     })
-    .eq("id", params.id)
+    .eq("id", id)
     .select()
     .single();
 

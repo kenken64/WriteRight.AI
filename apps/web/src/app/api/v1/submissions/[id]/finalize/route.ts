@@ -1,29 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { extractTextFromImages } from "@writeright/ai/ocr/vision-client";
+import { extractTextFromFiles } from "@writeright/ai/ocr/vision-client";
 import { evaluateEssay } from "@writeright/ai/marking/engine";
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createServerSupabaseClient();
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data: submission } = await supabase
     .from("submissions")
     .select("*, assignment:assignments(*)")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (!submission) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (!submission.image_refs?.length) {
-    return NextResponse.json({ error: "No images uploaded" }, { status: 400 });
+    return NextResponse.json({ error: "No files uploaded" }, { status: 400 });
   }
 
   // Transition to processing
   const { data: updated, error: updateErr } = await supabase
     .from("submissions")
     .update({ status: "processing", updated_at: new Date().toISOString() })
-    .eq("id", params.id)
+    .eq("id", id)
     .eq("status", "draft")
     .select()
     .single();
@@ -33,16 +34,26 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 
   try {
-    // Step 1: OCR if not already done
+    // Step 1: OCR / text extraction if not already done
     let ocrText = submission.ocr_text;
     if (!ocrText) {
-      // Build public URLs for the images
-      const imageUrls = submission.image_refs.map((ref: string) => {
+      // Build public URLs for the uploaded files
+      const fileUrls = submission.image_refs.map((ref: string) => {
         const { data } = supabase.storage.from("submissions").getPublicUrl(ref);
         return data.publicUrl;
       });
 
-      const ocrResult = await extractTextFromImages(imageUrls);
+      // Detect file type from the first file's extension
+      const firstRef: string = submission.image_refs[0];
+      const ext = firstRef.split(".").pop()?.toLowerCase() ?? "";
+      const mimeByExt: Record<string, string> = {
+        pdf: "application/pdf",
+        docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        doc: "application/msword",
+      };
+      const detectedType = mimeByExt[ext] ?? "image/*";
+
+      const ocrResult = await extractTextFromFiles(fileUrls, detectedType);
       ocrText = ocrResult.text;
 
       await supabase.from("submissions").update({
@@ -50,11 +61,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         ocr_confidence: ocrResult.confidence,
         status: "ocr_complete",
         updated_at: new Date().toISOString(),
-      }).eq("id", params.id);
+      }).eq("id", id);
     }
 
     // Step 2: Auto-evaluate
-    await supabase.from("submissions").update({ status: "evaluating", updated_at: new Date().toISOString() }).eq("id", params.id);
+    await supabase.from("submissions").update({ status: "evaluating", updated_at: new Date().toISOString() }).eq("id", id);
 
     const result = await evaluateEssay({
       essayText: ocrText,
@@ -66,7 +77,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     });
 
     const evaluation = {
-      submission_id: params.id,
+      submission_id: id,
       essay_type: result.essayType,
       rubric_version: result.rubricVersion,
       model_id: result.modelId,
@@ -84,15 +95,15 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const { data: evalData, error: evalErr } = await supabase.from("evaluations").insert(evaluation).select().single();
 
     if (evalErr) {
-      await supabase.from("submissions").update({ status: "failed", failure_reason: evalErr.message, updated_at: new Date().toISOString() }).eq("id", params.id);
+      await supabase.from("submissions").update({ status: "failed", failure_reason: evalErr.message, updated_at: new Date().toISOString() }).eq("id", id);
       return NextResponse.json({ error: evalErr.message }, { status: 500 });
     }
 
-    await supabase.from("submissions").update({ status: "evaluated", updated_at: new Date().toISOString() }).eq("id", params.id);
+    await supabase.from("submissions").update({ status: "evaluated", updated_at: new Date().toISOString() }).eq("id", id);
 
     return NextResponse.json({ submission: { ...updated, ocr_text: ocrText, status: "evaluated" }, evaluation: evalData }, { status: 201 });
   } catch (err: any) {
-    await supabase.from("submissions").update({ status: "failed", failure_reason: err.message, updated_at: new Date().toISOString() }).eq("id", params.id);
+    await supabase.from("submissions").update({ status: "failed", failure_reason: err.message, updated_at: new Date().toISOString() }).eq("id", id);
     return NextResponse.json({ error: err.message ?? "Finalize failed" }, { status: 500 });
   }
 }

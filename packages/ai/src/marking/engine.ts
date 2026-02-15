@@ -1,5 +1,5 @@
 import { chatCompletion } from "../shared/openai-client";
-import { MODEL_PRIMARY } from "../shared/model-config";
+import { MODEL_EVALUATION } from "../shared/model-config";
 import { MarkingError, withRetry } from "../shared/errors";
 import { getPrompt } from "../prompts/registry";
 import { getSituationalRubric } from "./rubrics/situational";
@@ -33,7 +33,7 @@ export async function evaluateEssay(input: MarkingInput): Promise<EvaluationResu
   });
 
   const rawResult = await withRetry(
-    () => chatCompletion(system, user, { temperature: 0.2, maxTokens: 4000, jsonMode: true }),
+    () => chatCompletion(system, user, { model: MODEL_EVALUATION, maxTokens: 4000, jsonMode: true, reasoningEffort: "high" }),
     2
   );
 
@@ -47,7 +47,7 @@ export async function evaluateEssay(input: MarkingInput): Promise<EvaluationResu
   const result: EvaluationResult = {
     essayType: input.essayType,
     rubricVersion: rubric.version,
-    modelId: MODEL_PRIMARY,
+    modelId: MODEL_EVALUATION,
     promptVersion: promptKey,
     dimensionScores: parsed.dimensionScores ?? [],
     totalScore: parsed.totalScore ?? 0,

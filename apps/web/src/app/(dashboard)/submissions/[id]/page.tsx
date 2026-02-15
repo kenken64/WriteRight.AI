@@ -4,15 +4,16 @@ import { notFound } from 'next/navigation';
 import { formatStatus, formatConfidence } from '@/lib/utils/format';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function SubmissionDetailPage({ params }: Props) {
-  const supabase = createServerSupabaseClient();
+  const { id } = await params;
+  const supabase = await createServerSupabaseClient();
   const { data: submission } = await supabase
     .from('submissions')
     .select('*, assignment:assignments(prompt, essay_type, essay_sub_type)')
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   if (!submission) notFound();
@@ -54,13 +55,13 @@ export default async function SubmissionDetailPage({ params }: Props) {
       {submission.status === 'evaluated' && (
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Link
-            href={`/submissions/${params.id}/feedback`}
+            href={`/submissions/${id}/feedback`}
             className="flex-1 rounded-md bg-primary px-4 py-2 text-center text-sm font-medium text-white hover:bg-primary/90"
           >
             View Feedback
           </Link>
           <Link
-            href={`/submissions/${params.id}/rewrite`}
+            href={`/submissions/${id}/rewrite`}
             className="flex-1 rounded-md border px-4 py-2 text-center text-sm font-medium hover:bg-muted"
           >
             View Rewrite

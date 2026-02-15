@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireParentOrStudent, isAuthError } from "@/lib/middleware/rbac";
 
-export async function GET(req: NextRequest, { params }: { params: { studentId: string } }) {
-  const auth = await requireParentOrStudent(req, params.studentId);
+export async function GET(req: NextRequest, { params }: { params: Promise<{ studentId: string }> }) {
+  const { studentId } = await params;
+  const auth = await requireParentOrStudent(req, studentId);
   if (isAuthError(auth)) return auth;
 
   const { data: unlocked } = await auth.supabase
     .from("student_achievements")
     .select("achievement_id")
-    .eq("student_id", params.studentId);
+    .eq("student_id", studentId);
 
   const unlockedIds = (unlocked ?? []).map((a) => a.achievement_id);
 

@@ -5,15 +5,16 @@ import { FeedbackItem } from '@/components/feedback/feedback-item';
 import Link from 'next/link';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function FeedbackPage({ params }: Props) {
-  const supabase = createServerSupabaseClient();
+  const { id } = await params;
+  const supabase = await createServerSupabaseClient();
   const { data: evaluation } = await supabase
     .from('evaluations')
     .select('*')
-    .eq('submission_id', params.id)
+    .eq('submission_id', id)
     .order('created_at', { ascending: false })
     .limit(1)
     .single();
@@ -22,7 +23,7 @@ export default async function FeedbackPage({ params }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <Link href={`/submissions/${params.id}`} className="text-sm text-muted-foreground hover:underline">
+      <Link href={`/submissions/${id}`} className="text-sm text-muted-foreground hover:underline">
         ← Back to Submission
       </Link>
 

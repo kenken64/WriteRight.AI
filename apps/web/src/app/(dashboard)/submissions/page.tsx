@@ -3,7 +3,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { formatStatus, formatRelativeDate } from '@/lib/utils/format';
 
 export default async function SubmissionsPage() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data: submissions } = await supabase
     .from('submissions')
     .select('*, assignment:assignments(prompt, essay_type)')

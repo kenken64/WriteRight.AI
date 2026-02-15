@@ -3,15 +3,16 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function AssignmentDetailPage({ params }: Props) {
-  const supabase = createServerSupabaseClient();
+  const { id } = await params;
+  const supabase = await createServerSupabaseClient();
   const { data: assignment } = await supabase
     .from('assignments')
     .select('*, submissions(*)')
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   if (!assignment) notFound();

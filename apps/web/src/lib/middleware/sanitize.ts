@@ -46,6 +46,8 @@ const ALLOWED_MIME_TYPES = new Set([
   'image/png',
   'image/heif',
   'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/msword',
 ]);
 
 /**

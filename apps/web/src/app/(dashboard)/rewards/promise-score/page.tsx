@@ -3,7 +3,7 @@ import { PromiseScoreDonut } from '@/components/charts/promise-score-donut';
 import Link from 'next/link';
 
 export default async function PromiseScorePage() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

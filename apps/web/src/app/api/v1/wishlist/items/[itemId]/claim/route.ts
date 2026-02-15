@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireRole, isAuthError } from "@/lib/middleware/rbac";
 
-export async function POST(req: NextRequest, { params }: { params: { itemId: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ itemId: string }> }) {
+  const { itemId } = await params;
   // Student only — students claim rewards
   const auth = await requireRole(req, 'student');
   if (isAuthError(auth)) return auth;
@@ -9,7 +10,7 @@ export async function POST(req: NextRequest, { params }: { params: { itemId: str
   const { data: item } = await auth.supabase
     .from("wishlist_items")
     .select("*")
-    .eq("id", params.itemId)
+    .eq("id", itemId)
     .single();
 
   if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest, { params }: { params: { itemId: str
   }
 
   const now = new Date().toISOString();
-  await auth.supabase.from("wishlist_items").update({ status: "claimed", claimed_at: now }).eq("id", params.itemId);
+  await auth.supabase.from("wishlist_items").update({ status: "claimed", claimed_at: now }).eq("id", itemId);
 
   // Get parent ID from link
   const { data: link } = await auth.supabase
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest, { params }: { params: { itemId: str
     .single();
 
   const { data: redemption, error } = await auth.supabase.from("redemptions").insert({
-    wishlist_item_id: params.itemId,
+    wishlist_item_id: itemId,
     student_id: item.student_id,
     parent_id: link?.parent_id ?? null,
     achievement_id: item.required_achievement_id,

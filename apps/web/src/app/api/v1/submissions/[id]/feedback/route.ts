@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createServerSupabaseClient();
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data: evaluations } = await supabase
     .from("evaluations")
     .select("*")
-    .eq("submission_id", params.id)
+    .eq("submission_id", id)
     .order("created_at", { ascending: false });
 
   if (!evaluations?.length) return NextResponse.json({ error: "No evaluation found" }, { status: 404 });

@@ -30,7 +30,7 @@ export async function getUserRole(supabase: SupabaseClient, userId: string): Pro
  * Validates JWT / session, returns user or 401.
  */
 export async function requireAuth(_req: NextRequest): Promise<AuthResult | NextResponse> {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {

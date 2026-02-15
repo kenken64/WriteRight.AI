@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createServerSupabaseClient();
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data: assignment } = await supabase
     .from("assignments")
     .select("*, submissions(*, evaluations(*), rewrites(*))")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (!assignment) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -28,7 +29,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     status: 200,
     headers: {
       "Content-Type": "text/html; charset=utf-8",
-      "Content-Disposition": `inline; filename="writeright-report-${params.id}.html"`,
+      "Content-Disposition": `inline; filename="writeright-report-${id}.html"`,
     },
   });
 }

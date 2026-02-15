@@ -11,7 +11,7 @@ import { SummaryCard } from '@/components/dashboard/summary-card';
 import Link from 'next/link';
 
 export default async function PerformancePage() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const {
     data: { user },

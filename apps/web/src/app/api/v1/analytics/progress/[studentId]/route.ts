@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireParentOf, isAuthError } from "@/lib/middleware/rbac";
 
-export async function GET(req: NextRequest, { params }: { params: { studentId: string } }) {
-  const auth = await requireParentOf(req, params.studentId);
+export async function GET(req: NextRequest, { params }: { params: Promise<{ studentId: string }> }) {
+  const { studentId } = await params;
+  const auth = await requireParentOf(req, studentId);
   if (isAuthError(auth)) return auth;
 
   const { searchParams } = new URL(req.url);
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest, { params }: { params: { studentId: s
     .order("created_at");
 
   const studentEvals = (evals ?? []).filter(
-    (e: any) => e.submission?.assignment?.student_id === params.studentId
+    (e: any) => e.submission?.assignment?.student_id === studentId
   );
 
   const scoreTrend = studentEvals.map((e) => ({
@@ -42,7 +43,7 @@ export async function GET(req: NextRequest, { params }: { params: { studentId: s
   const { data: streak } = await auth.supabase
     .from("student_streaks")
     .select("*")
-    .eq("student_id", params.studentId)
+    .eq("student_id", studentId)
     .single();
 
   return NextResponse.json({

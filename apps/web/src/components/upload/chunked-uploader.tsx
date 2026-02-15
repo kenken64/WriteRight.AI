@@ -1,7 +1,20 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Upload, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, X, CheckCircle, AlertCircle, Image, FileText, File as FileIcon } from 'lucide-react';
+
+const ACCEPTED_TYPES =
+  'image/jpeg,image/png,image/heif,image/heic,application/pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+function getFileTypeIcon(file: File) {
+  if (file.type === 'application/pdf') return <FileText className="h-5 w-5 text-red-500" />;
+  if (
+    file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+    file.name.endsWith('.docx')
+  )
+    return <FileIcon className="h-5 w-5 text-blue-500" />;
+  return <Image className="h-5 w-5 text-green-500" />;
+}
 
 interface ChunkedUploaderProps {
   assignmentId: string;
@@ -60,14 +73,14 @@ export function ChunkedUploader({ assignmentId, maxImages, onComplete }: Chunked
       <div className="rounded-lg border-2 border-dashed p-8 text-center">
         <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
         <p className="mt-2 text-sm text-muted-foreground">
-          Drag and drop images or click to browse
+          Drag and drop files or click to browse
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          JPEG, PNG, HEIF · Max {maxImages} images
+          Images (JPEG, PNG, HEIF), PDF, or Word (.docx) · Max {maxImages} files
         </p>
         <input
           type="file"
-          accept="image/jpeg,image/png,image/heif,image/heic"
+          accept={ACCEPTED_TYPES}
           multiple
           onChange={handleFileSelect}
           className="mt-4"
@@ -78,6 +91,7 @@ export function ChunkedUploader({ assignmentId, maxImages, onComplete }: Chunked
         <div className="space-y-2">
           {files.map((f, i) => (
             <div key={i} className="flex items-center gap-3 rounded-md border p-3">
+              {getFileTypeIcon(f.file)}
               <div className="flex-1">
                 <p className="text-sm font-medium">{f.file.name}</p>
                 <div className="mt-1 h-2 rounded-full bg-muted">
@@ -100,7 +114,7 @@ export function ChunkedUploader({ assignmentId, maxImages, onComplete }: Chunked
             onClick={uploadAll}
             className="w-full rounded-md bg-primary py-2 text-sm font-medium text-white hover:bg-primary/90"
           >
-            Upload {files.length} image{files.length > 1 ? 's' : ''}
+            Upload {files.length} file{files.length > 1 ? 's' : ''}
           </button>
         </div>
       )}

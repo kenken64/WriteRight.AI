@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-export async function GET(req: NextRequest, { params }: { params: { draftId: string } }) {
-  const supabase = createServerSupabaseClient();
+export async function GET(req: NextRequest, { params }: { params: Promise<{ draftId: string }> }) {
+  const { draftId } = await params;
+  const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -10,7 +11,7 @@ export async function GET(req: NextRequest, { params }: { params: { draftId: str
   const { data: draft } = await supabase
     .from("essay_drafts")
     .select("student_id")
-    .eq("id", params.draftId)
+    .eq("id", draftId)
     .single();
 
   if (!draft) return NextResponse.json({ error: "Draft not found" }, { status: 404 });
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest, { params }: { params: { draftId: str
   const { data, error } = await supabase
     .from("ai_interactions")
     .select("*")
-    .eq("draft_id", params.draftId)
+    .eq("draft_id", draftId)
     .order("created_at", { ascending: true });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

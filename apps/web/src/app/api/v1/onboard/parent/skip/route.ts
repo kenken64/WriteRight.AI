@@ -4,7 +4,7 @@ import { markOnboarded } from '@/lib/supabase/ensure-user-row';
 
 export async function POST() {
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = await createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

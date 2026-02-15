@@ -3,7 +3,7 @@ import { PromiseTracker } from '@/components/rewards/promise-tracker';
 import Link from 'next/link';
 
 export default async function RewardsPage() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

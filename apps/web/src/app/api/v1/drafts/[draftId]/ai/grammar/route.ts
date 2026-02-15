@@ -4,8 +4,9 @@ import { z } from "zod";
 
 const schema = z.object({ text: z.string().min(10) });
 
-export async function POST(req: NextRequest, { params }: { params: { draftId: string } }) {
-  const supabase = createServerSupabaseClient();
+export async function POST(req: NextRequest, { params }: { params: Promise<{ draftId: string }> }) {
+  const { draftId } = await params;
+  const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest, { params }: { params: { draftId: st
     const { data: draft } = await supabase
       .from("essay_drafts")
       .select("student_id, ai_assistant_enabled")
-      .eq("id", params.draftId)
+      .eq("id", draftId)
       .single();
 
     if (!draft) return NextResponse.json({ error: "Draft not found" }, { status: 404 });
@@ -26,12 +27,12 @@ export async function POST(req: NextRequest, { params }: { params: { draftId: st
     const result = await checkGrammar({ text });
 
     // Clear old annotations and insert new
-    await supabase.from("grammar_annotations").delete().eq("draft_id", params.draftId);
+    await supabase.from("grammar_annotations").delete().eq("draft_id", draftId);
 
     if (result.annotations.length > 0) {
       await supabase.from("grammar_annotations").insert(
         result.annotations.map((a) => ({
-          draft_id: params.draftId,
+          draft_id: draftId,
           offset_start: a.offsetStart,
           offset_end: a.offsetEnd,
           category: a.category,

@@ -2,7 +2,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { TrophyCard } from '@/components/rewards/trophy-card';
 
 export default async function TrophyCasePage() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data: trophies } = await supabase
     .from('redemptions')
     .select('*, wishlist_item:wishlist_items(*), achievement:achievements(*)')
