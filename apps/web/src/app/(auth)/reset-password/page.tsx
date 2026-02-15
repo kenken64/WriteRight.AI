@@ -41,6 +41,11 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     setError(null);
 
+    if (!sessionReady) {
+      setError('Auth session missing! Please use a fresh reset link from your email.');
+      return;
+    }
+
     if (password.length < 8) {
       setError('Password must be at least 8 characters.');
       return;
@@ -61,6 +66,8 @@ export default function ResetPasswordPage() {
     } else {
       setSuccess(true);
       setLoading(false);
+      // Sign out so they can log in with new password
+      await supabase.auth.signOut();
       setTimeout(() => router.push('/login'), 2000);
     }
   };

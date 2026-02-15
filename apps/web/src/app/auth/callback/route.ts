@@ -5,6 +5,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
+  const tokenHash = searchParams.get('token_hash');
   const next = searchParams.get('next') ?? '/assignments';
   const type = searchParams.get('type');
 
@@ -34,9 +35,10 @@ export async function GET(request: NextRequest) {
   );
 
   // Handle password recovery flow (token_hash from email link)
-  if (code && type === 'recovery') {
+  const recoveryToken = tokenHash || code;
+  if (recoveryToken && type === 'recovery') {
     const { error } = await supabase.auth.verifyOtp({
-      token_hash: code,
+      token_hash: recoveryToken,
       type: 'recovery',
     });
     if (!error) {
