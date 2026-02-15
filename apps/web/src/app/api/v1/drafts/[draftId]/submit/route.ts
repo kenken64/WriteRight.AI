@@ -28,11 +28,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ dra
     .from("submissions")
     .insert({
       assignment_id: draft.assignment_id,
-      student_id: draft.student_id,
-      essay_text: draft.plain_text,
+      ocr_text: draft.plain_text,
       word_count: draft.word_count,
-      source: "editor",
-      status: "pending_evaluation",
+      status: "ocr_complete",
     })
     .select()
     .single();

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { Upload, X, CheckCircle, AlertCircle, Image, FileText, File as FileIcon } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
 const ACCEPTED_TYPES =
   'image/jpeg,image/png,image/heif,image/heic,application/pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
@@ -19,7 +20,7 @@ function getFileTypeIcon(file: File) {
 interface ChunkedUploaderProps {
   assignmentId: string;
   maxImages: number;
-  onComplete: (files: File[]) => void;
+  onComplete: (refs: string[]) => void;
 }
 
 interface UploadFile {
@@ -31,6 +32,7 @@ interface UploadFile {
 
 export function ChunkedUploader({ assignmentId, maxImages, onComplete }: ChunkedUploaderProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,22 +52,48 @@ export function ChunkedUploader({ assignmentId, maxImages, onComplete }: Chunked
   };
 
   const uploadAll = async () => {
-    // TODO: Implement tus.io chunked upload
-    // Each file uploads with resume capability
+    const supabase = createClient();
+    setUploading(true);
     setFiles((prev) =>
       prev.map((f) => ({ ...f, status: 'uploading' as const, progress: 0 })),
     );
 
-    // Simulate upload progress
+    const refs: string[] = [];
+
     for (let i = 0; i < files.length; i++) {
-      setFiles((prev) =>
-        prev.map((f, idx) =>
-          idx === i ? { ...f, progress: 100, status: 'complete' as const } : f,
-        ),
-      );
+      const f = files[i];
+      const timestamp = Date.now();
+      const path = `${assignmentId}/${timestamp}-${f.file.name}`;
+
+      try {
+        const { error } = await supabase.storage
+          .from('submissions')
+          .upload(path, f.file);
+
+        if (error) throw error;
+
+        refs.push(path);
+        setFiles((prev) =>
+          prev.map((item, idx) =>
+            idx === i ? { ...item, progress: 100, status: 'complete' as const } : item,
+          ),
+        );
+      } catch (err) {
+        setFiles((prev) =>
+          prev.map((item, idx) =>
+            idx === i
+              ? { ...item, progress: 0, status: 'error' as const, error: (err as Error).message }
+              : item,
+          ),
+        );
+      }
     }
 
-    onComplete(files.map((f) => f.file));
+    setUploading(false);
+
+    if (refs.length > 0) {
+      onComplete(refs);
+    }
   };
 
   return (
@@ -94,6 +122,9 @@ export function ChunkedUploader({ assignmentId, maxImages, onComplete }: Chunked
               {getFileTypeIcon(f.file)}
               <div className="flex-1">
                 <p className="text-sm font-medium">{f.file.name}</p>
+                {f.status === 'error' && (
+                  <p className="text-xs text-red-500">{f.error}</p>
+                )}
                 <div className="mt-1 h-2 rounded-full bg-muted">
                   <div
                     className="h-2 rounded-full bg-primary transition-all"
@@ -112,9 +143,10 @@ export function ChunkedUploader({ assignmentId, maxImages, onComplete }: Chunked
           ))}
           <button
             onClick={uploadAll}
-            className="w-full rounded-md bg-primary py-2 text-sm font-medium text-white hover:bg-primary/90"
+            disabled={uploading}
+            className="w-full rounded-md bg-primary py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
           >
-            Upload {files.length} file{files.length > 1 ? 's' : ''}
+            {uploading ? 'Uploading...' : `Upload ${files.length} file${files.length > 1 ? 's' : ''}`}
           </button>
         </div>
       )}

@@ -27,7 +27,6 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { data, error } = await supabase.from("submissions").insert({
     assignment_id: body.assignmentId,
-    student_id: user.id,
     image_refs: body.imageRefs ?? [],
     status: "draft",
   }).select().single();
