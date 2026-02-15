@@ -17,24 +17,38 @@ export default function ResetPasswordPage() {
   const [sessionReady, setSessionReady] = useState(false);
   const router = useRouter();
 
-  // Listen for PASSWORD_RECOVERY event from Supabase (auto-detected from URL hash)
+  // Detect auth session - either from server-side callback (cookies) or client-side hash fragments
   useEffect(() => {
     const supabase = createClient();
+
+    // 1. Listen for auth events (handles hash fragment detection)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setSessionReady(true);
-      }
-      if (event === 'SIGNED_IN') {
+      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
         setSessionReady(true);
       }
     });
 
-    // Also check if user is already authenticated (e.g. came via server callback)
+    // 2. Check if already authenticated (came via server-side callback with cookies set)
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) setSessionReady(true);
     });
 
-    return () => subscription.unsubscribe();
+    // 3. If hash contains access_token (implicit flow), Supabase client auto-detects it
+    //    If no session after 3 seconds, show a helpful message
+    const timeout = setTimeout(() => {
+      if (!sessionReady) {
+        supabase.auth.getUser().then(({ data: { user } }) => {
+          if (!user) {
+            setError('Reset link expired or already used. Please request a new one.');
+          }
+        });
+      }
+    }, 3000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

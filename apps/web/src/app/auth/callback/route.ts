@@ -13,11 +13,6 @@ export async function GET(request: NextRequest) {
   const protocol = request.headers.get('x-forwarded-proto') || 'https';
   const origin = `${protocol}://${host}`;
 
-  // Default redirect (error case)
-  let redirectTo = `${origin}/login?error=auth_callback_error`;
-
-  // Create a redirect response first, then attach cookies to IT
-  // (Using cookies() from next/headers doesn't carry over to NextResponse.redirect)
   const createSupabaseWithResponse = (response: NextResponse) => {
     return createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -38,29 +33,33 @@ export async function GET(request: NextRequest) {
     );
   };
 
-  // Handle password recovery flow (token_hash from email link)
-  if (tokenHash && type === 'recovery') {
-    const response = NextResponse.redirect(`${origin}/reset-password`);
+  // Handle token_hash (implicit flow - recovery or email confirmation)
+  if (tokenHash) {
+    const redirectTarget = type === 'recovery' ? '/reset-password' : next;
+    const response = NextResponse.redirect(`${origin}${redirectTarget}`);
     const supabase = createSupabaseWithResponse(response);
     const { error } = await supabase.auth.verifyOtp({
       token_hash: tokenHash,
-      type: 'recovery',
+      type: (type as 'recovery' | 'signup' | 'email') || 'recovery',
     });
     if (!error) {
-      return response; // cookies are already on this response
+      return response;
     }
-    // Fall through to error redirect
+    console.error('verifyOtp error:', error.message);
   }
 
-  // Handle standard auth code exchange (login, signup confirmation, etc.)
-  if (code && type !== 'recovery') {
-    const response = NextResponse.redirect(`${origin}${next}`);
+  // Handle code (PKCE flow or OAuth)
+  if (code) {
+    const redirectTarget = type === 'recovery' ? '/reset-password' : next;
+    const response = NextResponse.redirect(`${origin}${redirectTarget}`);
     const supabase = createSupabaseWithResponse(response);
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
       return response;
     }
+    console.error('exchangeCodeForSession error:', error.message);
   }
 
-  return NextResponse.redirect(redirectTo);
+  // If we get here with no code/token, redirect with error
+  return NextResponse.redirect(`${origin}/login?error=auth_callback_error`);
 }
