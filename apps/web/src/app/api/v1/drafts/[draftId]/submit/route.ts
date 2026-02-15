@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, createAdminSupabaseClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ draftId: string }> }) {
   const { draftId } = await params;
@@ -23,8 +23,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ dra
     .update({ status: "submitted", updated_at: new Date().toISOString() })
     .eq("id", draftId);
 
-  // Create submission record
-  const { data: submission, error: subErr } = await supabase
+  // Create submission record (admin client to bypass RLS — auth verified above)
+  const admin = createAdminSupabaseClient();
+  const { data: submission, error: subErr } = await admin
     .from("submissions")
     .insert({
       assignment_id: draft.assignment_id,
