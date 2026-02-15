@@ -27,7 +27,7 @@ export function csrfProtection(
   if (path.startsWith('/api/v1/webhooks/stripe')) return null;
   if (path.startsWith('/auth/callback')) return null;
   if (path.startsWith('/api/auth/callback')) return null;
-  if (path.startsWith('/api/v1/auth/logout')) return null;
+  if (path.startsWith('/api/v1/auth/')) return null; // login, register, logout, forgot-password, reset-password
 
   const method = req.method.toUpperCase();
 
