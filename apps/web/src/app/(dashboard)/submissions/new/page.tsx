@@ -43,17 +43,13 @@ export default function NewSubmissionPage() {
 
       const { submission } = await res.json();
 
-      // Trigger OCR + evaluation
-      const finalizeRes = await fetch(`/api/v1/submissions/${submission.id}/finalize`, {
+      // Trigger OCR + evaluation in the background (don't await)
+      fetch(`/api/v1/submissions/${submission.id}/finalize`, {
         method: 'POST',
         headers,
       });
 
-      if (!finalizeRes.ok) {
-        const data = await finalizeRes.json();
-        throw new Error(data.error ?? 'Failed to finalize submission');
-      }
-
+      // Redirect immediately — the detail page shows live status
       router.push(`/submissions/${submission.id}`);
     } catch (err) {
       setError((err as Error).message);
