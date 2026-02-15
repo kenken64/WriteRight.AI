@@ -33,9 +33,13 @@ export async function GET(request: NextRequest) {
     );
   };
 
-  // Handle token_hash (implicit flow - recovery or email confirmation)
+  // Determine where to redirect after auth
+  const isRecovery = type === 'recovery';
+  const redirectTarget = isRecovery ? '/reset-password' : next;
+
+  // Handle token_hash — try verifyOtp first, if that fails with PKCE token,
+  // pass it through to the client by appending as query params
   if (tokenHash) {
-    const redirectTarget = type === 'recovery' ? '/reset-password' : next;
     const response = NextResponse.redirect(`${origin}${redirectTarget}`);
     const supabase = createSupabaseWithResponse(response);
     const { error } = await supabase.auth.verifyOtp({
@@ -46,11 +50,18 @@ export async function GET(request: NextRequest) {
       return response;
     }
     console.error('verifyOtp error:', error.message);
+
+    // If verifyOtp failed (e.g. PKCE token), pass token through to client
+    if (isRecovery) {
+      const clientUrl = new URL(`${origin}/reset-password`);
+      clientUrl.searchParams.set('token_hash', tokenHash);
+      clientUrl.searchParams.set('type', 'recovery');
+      return NextResponse.redirect(clientUrl.toString());
+    }
   }
 
   // Handle code (PKCE flow or OAuth)
   if (code) {
-    const redirectTarget = type === 'recovery' ? '/reset-password' : next;
     const response = NextResponse.redirect(`${origin}${redirectTarget}`);
     const supabase = createSupabaseWithResponse(response);
     const { error } = await supabase.auth.exchangeCodeForSession(code);
@@ -58,6 +69,11 @@ export async function GET(request: NextRequest) {
       return response;
     }
     console.error('exchangeCodeForSession error:', error.message);
+
+    // If server exchange failed, pass code to client to try
+    if (isRecovery) {
+      return NextResponse.redirect(`${origin}/reset-password?code=${code}`);
+    }
   }
 
   // If we get here with no code/token, redirect with error

@@ -17,37 +17,75 @@ export default function ResetPasswordPage() {
   const [sessionReady, setSessionReady] = useState(false);
   const router = useRouter();
 
-  // Detect auth session - either from server-side callback (cookies) or client-side hash fragments
+  // Handle recovery session from multiple flows:
+  // 1. Hash fragments (#access_token=xxx&type=recovery) — implicit flow
+  // 2. Query params (?code=xxx) — PKCE flow
+  // 3. Existing session cookies — came via server callback
   useEffect(() => {
     const supabase = createClient();
+    let cancelled = false;
 
-    // 1. Listen for auth events (handles hash fragment detection)
+    // Listen for auth events (implicit flow hash detection)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
+        if (!cancelled) setSessionReady(true);
+      }
+    });
+
+    async function initSession() {
+      // Check for PKCE code in URL query params
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (!error && !cancelled) {
+          setSessionReady(true);
+          // Clean up URL
+          window.history.replaceState({}, '', '/reset-password');
+          return;
+        }
+        if (error) console.error('Code exchange failed:', error.message);
+      }
+
+      // Check for token_hash in URL query params (server-side redirect passthrough)
+      const tokenHash = params.get('token_hash');
+      const type = params.get('type');
+      if (tokenHash && type === 'recovery') {
+        const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
+        if (!error && !cancelled) {
+          setSessionReady(true);
+          window.history.replaceState({}, '', '/reset-password');
+          return;
+        }
+        if (error) console.error('Token verification failed:', error.message);
+      }
+
+      // Check for existing session (came via server callback with cookies)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && !cancelled) {
         setSessionReady(true);
+        return;
       }
-    });
 
-    // 2. Check if already authenticated (came via server-side callback with cookies set)
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setSessionReady(true);
-    });
+      // If nothing worked after checking everything, wait a bit for hash detection
+      // then show error
+      setTimeout(() => {
+        if (!cancelled) {
+          supabase.auth.getUser().then(({ data: { user } }) => {
+            if (!user && !cancelled) {
+              setError('Reset link expired or already used. Please request a new one.');
+            }
+          });
+        }
+      }, 2000);
+    }
 
-    // 3. If hash contains access_token (implicit flow), Supabase client auto-detects it
-    //    If no session after 3 seconds, show a helpful message
-    const timeout = setTimeout(() => {
-      if (!sessionReady) {
-        supabase.auth.getUser().then(({ data: { user } }) => {
-          if (!user) {
-            setError('Reset link expired or already used. Please request a new one.');
-          }
-        });
-      }
-    }, 3000);
+    initSession();
 
     return () => {
+      cancelled = true;
       subscription.unsubscribe();
-      clearTimeout(timeout);
     };
   }, []);
 
