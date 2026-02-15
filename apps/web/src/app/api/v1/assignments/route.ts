@@ -26,9 +26,22 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const parsed = createAssignmentSchema.parse(body);
+
+    // Resolve student_profile.id from auth user
+    let studentId = parsed.student_id;
+    if (!studentId) {
+      const { data: profile } = await supabase
+        .from("student_profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+      if (!profile) return NextResponse.json({ error: "Student profile not found. Please complete onboarding first." }, { status: 400 });
+      studentId = profile.id;
+    }
+
     const { data, error } = await supabase.from("assignments").insert({
       ...parsed,
-      student_id: parsed.student_id || user.id,
+      student_id: studentId,
       language: "en",
     }).select().single();
 
