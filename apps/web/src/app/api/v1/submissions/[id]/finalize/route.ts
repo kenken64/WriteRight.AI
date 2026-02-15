@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, createAdminSupabaseClient } from "@/lib/supabase/server";
 import { extractTextFromFiles } from "@writeright/ai/ocr/vision-client";
 import { evaluateEssay } from "@writeright/ai/marking/engine";
 
@@ -9,7 +9,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: submission } = await supabase
+  // Use admin client for DB mutations (RLS already verified via auth above)
+  const admin = createAdminSupabaseClient();
+
+  const { data: submission } = await admin
     .from("submissions")
     .select("*, assignment:assignments(*)")
     .eq("id", id)
@@ -21,7 +24,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   // Transition to processing
-  const { data: updated, error: updateErr } = await supabase
+  const { data: updated, error: updateErr } = await admin
     .from("submissions")
     .update({ status: "processing", updated_at: new Date().toISOString() })
     .eq("id", id)
@@ -39,7 +42,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     if (!ocrText) {
       // Build public URLs for the uploaded files
       const fileUrls = submission.image_refs.map((ref: string) => {
-        const { data } = supabase.storage.from("submissions").getPublicUrl(ref);
+        const { data } = admin.storage.from("submissions").getPublicUrl(ref);
         return data.publicUrl;
       });
 
@@ -56,7 +59,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const ocrResult = await extractTextFromFiles(fileUrls, detectedType);
       ocrText = ocrResult.text;
 
-      await supabase.from("submissions").update({
+      await admin.from("submissions").update({
         ocr_text: ocrResult.text,
         ocr_confidence: ocrResult.confidence,
         status: "ocr_complete",
@@ -65,7 +68,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     // Step 2: Auto-evaluate
-    await supabase.from("submissions").update({ status: "evaluating", updated_at: new Date().toISOString() }).eq("id", id);
+    await admin.from("submissions").update({ status: "evaluating", updated_at: new Date().toISOString() }).eq("id", id);
 
     const result = await evaluateEssay({
       essayText: ocrText,
@@ -92,18 +95,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       review_recommended: result.reviewRecommended,
     };
 
-    const { data: evalData, error: evalErr } = await supabase.from("evaluations").insert(evaluation).select().single();
+    const { data: evalData, error: evalErr } = await admin.from("evaluations").insert(evaluation).select().single();
 
     if (evalErr) {
-      await supabase.from("submissions").update({ status: "failed", failure_reason: evalErr.message, updated_at: new Date().toISOString() }).eq("id", id);
+      await admin.from("submissions").update({ status: "failed", failure_reason: evalErr.message, updated_at: new Date().toISOString() }).eq("id", id);
       return NextResponse.json({ error: evalErr.message }, { status: 500 });
     }
 
-    await supabase.from("submissions").update({ status: "evaluated", updated_at: new Date().toISOString() }).eq("id", id);
+    await admin.from("submissions").update({ status: "evaluated", updated_at: new Date().toISOString() }).eq("id", id);
 
     return NextResponse.json({ submission: { ...updated, ocr_text: ocrText, status: "evaluated" }, evaluation: evalData }, { status: 201 });
   } catch (err: any) {
-    await supabase.from("submissions").update({ status: "failed", failure_reason: err.message, updated_at: new Date().toISOString() }).eq("id", id);
+    await admin.from("submissions").update({ status: "failed", failure_reason: err.message, updated_at: new Date().toISOString() }).eq("id", id);
     return NextResponse.json({ error: err.message ?? "Finalize failed" }, { status: 500 });
   }
 }
