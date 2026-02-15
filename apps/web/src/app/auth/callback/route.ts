@@ -3,10 +3,16 @@ import { cookies } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
   const next = searchParams.get('next') ?? '/assignments';
   const type = searchParams.get('type');
+
+  // Use X-Forwarded-Host or Host header to get the real public origin (Railway proxies internally via 0.0.0.0)
+  const forwardedHost = request.headers.get('x-forwarded-host');
+  const host = forwardedHost || request.headers.get('host') || '';
+  const protocol = request.headers.get('x-forwarded-proto') || 'https';
+  const origin = `${protocol}://${host}`;
 
   if (code) {
     const cookieStore = await cookies();
