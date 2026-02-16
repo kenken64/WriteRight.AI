@@ -33,7 +33,7 @@ export async function evaluateEssay(input: MarkingInput): Promise<EvaluationResu
   });
 
   const rawResult = await withRetry(
-    () => chatCompletion(system, user, { model: MODEL_EVALUATION, maxTokens: 4000, jsonMode: true, reasoningEffort: "high" }),
+    () => chatCompletion(system, user, { model: MODEL_EVALUATION, maxTokens: 4000, jsonMode: true, reasoningEffort: "medium" }),
     1
   );
 
