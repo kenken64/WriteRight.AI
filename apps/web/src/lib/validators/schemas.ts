@@ -282,8 +282,12 @@ export const studentOnboardSchema = z.object({
 });
 export type StudentOnboardInput = z.infer<typeof studentOnboardSchema>;
 
+export const parentTypeSchema = z.enum(['parent', 'school_teacher', 'tuition_teacher']);
+export type ParentType = z.infer<typeof parentTypeSchema>;
+
 export const parentOnboardSchema = z.object({
   inviteCode: z.string().length(6).toUpperCase(),
+  parentType: parentTypeSchema.optional().default('parent'),
 });
 export type ParentOnboardInput = z.infer<typeof parentOnboardSchema>;
 

@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { inviteCode } = parentOnboardSchema.parse(body);
+    const { inviteCode, parentType } = parentOnboardSchema.parse(body);
 
     // Ensure parent's users row exists first (needed for FK on parent_student_links)
     const ensureResult = await ensureUserRow(supabase, user);
@@ -72,6 +72,14 @@ export async function POST(req: NextRequest) {
         claimed_at: new Date().toISOString(),
       })
       .eq('id', codeRecord.id);
+
+    // Save parent type
+    if (parentType) {
+      await supabase
+        .from('users')
+        .update({ parent_type: parentType })
+        .eq('id', user.id);
+    }
 
     // Mark user as onboarded
     const onboardResult = await markOnboarded(supabase, user);

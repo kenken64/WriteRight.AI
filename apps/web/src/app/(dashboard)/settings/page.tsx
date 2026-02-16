@@ -6,11 +6,26 @@ import { InviteCodeCard } from '@/components/dashboard/invite-code-card';
 import { readCsrfToken } from '@/lib/hooks/use-csrf-token';
 import { Eye, EyeOff } from 'lucide-react';
 
+interface LinkedChild {
+  displayName: string;
+  level: string;
+  email: string;
+}
+
+interface LinkedGuardian {
+  displayName: string;
+  email: string;
+  parentType: string;
+}
+
 interface Settings {
   displayName: string;
   email: string;
   notificationPrefs: { email: boolean; push: boolean };
   role: string;
+  parentType?: string;
+  linkedChildren?: LinkedChild[];
+  linkedGuardians?: LinkedGuardian[];
 }
 
 async function fetchSettings(): Promise<Settings> {
@@ -19,7 +34,7 @@ async function fetchSettings(): Promise<Settings> {
   return res.json();
 }
 
-async function saveSettings(data: { displayName?: string; notificationPrefs?: { email: boolean; push: boolean } }) {
+async function saveSettings(data: { displayName?: string; notificationPrefs?: { email: boolean; push: boolean }; parentType?: string }) {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   const csrfToken = readCsrfToken();
   if (csrfToken) headers['x-csrf-token'] = csrfToken;
@@ -41,6 +56,7 @@ export default function SettingsPage() {
   const { data: settings, isLoading } = useQuery({ queryKey: ['settings'], queryFn: fetchSettings });
 
   const [displayName, setDisplayName] = useState('');
+  const [parentType, setParentType] = useState('parent');
   const [emailNotifs, setEmailNotifs] = useState(true);
   const [pushNotifs, setPushNotifs] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -57,16 +73,21 @@ export default function SettingsPage() {
   useEffect(() => {
     if (settings) {
       setDisplayName(settings.displayName);
+      setParentType(settings.parentType ?? 'parent');
       setEmailNotifs(settings.notificationPrefs.email);
       setPushNotifs(settings.notificationPrefs.push);
     }
   }, [settings]);
 
   const handleSave = () => {
-    mutation.mutate({
+    const data: Parameters<typeof saveSettings>[0] = {
       displayName,
       notificationPrefs: { email: emailNotifs, push: pushNotifs },
-    });
+    };
+    if (settings?.role === 'parent') {
+      data.parentType = parentType;
+    }
+    mutation.mutate(data);
   };
 
   if (isLoading) {
@@ -109,11 +130,70 @@ export default function SettingsPage() {
                 disabled
               />
             </div>
+            {settings?.role === 'parent' && (
+              <div>
+                <label className="block text-sm font-medium">Your Role</label>
+                <select
+                  value={parentType}
+                  onChange={(e) => setParentType(e.target.value)}
+                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+                >
+                  <option value="parent">Parent / Guardian</option>
+                  <option value="school_teacher">School Teacher</option>
+                  <option value="tuition_teacher">Tuition Centre Teacher</option>
+                </select>
+              </div>
+            )}
           </div>
         </section>
 
         {/* Invite Code (students only) */}
         {settings?.role === 'student' && <InviteCodeCard />}
+
+        {/* My Guardians (students only) */}
+        {settings?.role === 'student' && settings.linkedGuardians && settings.linkedGuardians.length > 0 && (
+          <section className="rounded-lg border bg-white p-6">
+            <h2 className="text-lg font-semibold">My Guardians</h2>
+            <div className="mt-4 space-y-3">
+              {settings.linkedGuardians.map((guardian, i) => (
+                <div key={i} className="flex items-center justify-between rounded-md border px-4 py-3">
+                  <div>
+                    <p className="text-sm font-medium">{guardian.displayName}</p>
+                    <p className="text-xs text-muted-foreground">{guardian.email}</p>
+                  </div>
+                  <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                    {guardian.parentType === 'school_teacher' ? 'School Teacher'
+                      : guardian.parentType === 'tuition_teacher' ? 'Tuition Teacher'
+                      : 'Parent'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Linked Children (parents only) */}
+        {settings?.role === 'parent' && settings.linkedChildren && settings.linkedChildren.length > 0 && (
+          <section className="rounded-lg border bg-white p-6">
+            <h2 className="text-lg font-semibold">Linked Children</h2>
+            <div className="mt-4 space-y-3">
+              {settings.linkedChildren.map((child, i) => (
+                <div key={i} className="flex items-center justify-between rounded-md border px-4 py-3">
+                  <div>
+                    <p className="text-sm font-medium">{child.displayName}</p>
+                    <p className="text-xs text-muted-foreground">{child.email}</p>
+                  </div>
+                  <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                    {child.level === 'sec3' ? 'Sec 3'
+                      : child.level === 'sec4' ? 'Sec 4'
+                      : child.level === 'sec5' ? 'Sec 5'
+                      : child.level}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Notifications */}
         <section className="rounded-lg border bg-white p-6">

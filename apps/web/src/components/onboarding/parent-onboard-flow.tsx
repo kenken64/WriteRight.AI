@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useParentOnboard, useParentSkipOnboard } from '@/lib/api/client';
+import type { ParentType } from '@/lib/validators/schemas';
 import { Users, Check, ArrowRight, Link2 } from 'lucide-react';
 
 type Step = 'welcome' | 'enter-code' | 'success';
@@ -15,6 +16,7 @@ interface Props {
 
 export function ParentOnboardFlow({ displayName }: Props) {
   const [step, setStep] = useState<Step>('welcome');
+  const [parentType, setParentType] = useState<ParentType>('parent');
   const [codeDigits, setCodeDigits] = useState<string[]>(Array(CODE_LENGTH).fill(''));
   const [confetti, setConfetti] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -42,10 +44,10 @@ export function ParentOnboardFlow({ displayName }: Props) {
     if (code.length !== CODE_LENGTH) return;
 
     linkChild.mutate(
-      { inviteCode: code },
+      { inviteCode: code, parentType },
       { onSuccess: () => setStep('success') },
     );
-  }, [linkChild]);
+  }, [linkChild, parentType]);
 
   const handleInputChange = (index: number, value: string) => {
     // Only allow valid characters
@@ -136,8 +138,38 @@ export function ParentOnboardFlow({ displayName }: Props) {
               As a parent, you can monitor your child&apos;s essay progress, set rewards, and track their improvement over time.
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              To get started, link your account to your child&apos;s using their invite code.
+              To get started, tell us your role and link your account to your child&apos;s using their invite code.
             </p>
+
+            <div className="mt-6 space-y-2">
+              <p className="text-sm font-medium text-foreground">I am a...</p>
+              {([
+                { value: 'parent' as const, label: 'Parent / Guardian' },
+                { value: 'school_teacher' as const, label: 'School Teacher' },
+                { value: 'tuition_teacher' as const, label: 'Tuition Centre Teacher' },
+              ]).map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setParentType(option.value)}
+                  className={`flex w-full items-center rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
+                    parentType === option.value
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-gray-200 text-muted-foreground hover:border-gray-300'
+                  }`}
+                >
+                  <span className={`mr-3 flex h-5 w-5 items-center justify-center rounded-full border-2 ${
+                    parentType === option.value
+                      ? 'border-primary bg-primary'
+                      : 'border-gray-300'
+                  }`}>
+                    {parentType === option.value && (
+                      <span className="h-2 w-2 rounded-full bg-white" />
+                    )}
+                  </span>
+                  {option.label}
+                </button>
+              ))}
+            </div>
 
             <button
               onClick={() => setStep('enter-code')}

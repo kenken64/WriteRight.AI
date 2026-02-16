@@ -23,13 +23,19 @@ const iconMap: Record<string, React.ElementType> = {
   'pen-tool': PenTool,
 };
 
+interface LinkedMember {
+  name: string;
+  detail: string;
+}
+
 interface SidebarProps {
   role: UserRole;
   userEmail: string;
+  linkedMembers?: LinkedMember[];
   children?: React.ReactNode;
 }
 
-export function DashboardSidebar({ role, userEmail, children }: SidebarProps) {
+export function DashboardSidebar({ role, userEmail, linkedMembers = [], children }: SidebarProps) {
   const pathname = usePathname();
   const navItems = getNavForRole(role);
   const { mobileOpen, setMobileOpen } = useSidebar();
@@ -70,6 +76,23 @@ export function DashboardSidebar({ role, userEmail, children }: SidebarProps) {
         <span className="mt-1 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs capitalize text-primary">
           {role}
         </span>
+        {linkedMembers.length > 0 && (
+          <div className="mt-3 border-t pt-3">
+            <p className="text-xs font-medium text-muted-foreground">
+              {linkedMembers.length} {role === 'parent'
+                ? linkedMembers.length === 1 ? 'child linked' : 'children linked'
+                : linkedMembers.length === 1 ? 'guardian linked' : 'guardians linked'}
+            </p>
+            <div className="mt-1.5 space-y-1">
+              {linkedMembers.map((member, i) => (
+                <div key={i} className="flex items-center gap-2 text-xs">
+                  <span className="font-medium text-foreground">{member.name}</span>
+                  <span className="text-muted-foreground">({member.detail})</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <nav className="flex-1 space-y-1 overflow-y-auto p-3">
