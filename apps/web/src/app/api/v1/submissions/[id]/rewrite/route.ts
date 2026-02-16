@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, createAdminSupabaseClient } from "@/lib/supabase/server";
 import { rewriteEssay } from "@writeright/ai/rewrite/engine";
 import type { EvaluationResult } from "@writeright/ai/shared/types";
 
@@ -9,10 +9,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const admin = createAdminSupabaseClient();
   const body = await req.json();
   const mode = body.mode ?? "exam_optimised";
 
-  const { data: submission } = await supabase
+  const { data: submission } = await admin
     .from("submissions")
     .select("*, assignment:assignments(*), evaluations(*)")
     .eq("id", id)
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       target_band: result.targetBand,
     };
 
-    const { data, error } = await supabase.from("rewrites").insert(rewrite).select().single();
+    const { data, error } = await admin.from("rewrites").insert(rewrite).select().single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ rewrite: data }, { status: 201 });
   } catch (err: any) {
@@ -74,6 +75,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data } = await supabase.from("rewrites").select("*").eq("submission_id", id).order("created_at", { ascending: false });
+  const admin = createAdminSupabaseClient();
+  const { data } = await admin.from("rewrites").select("*").eq("submission_id", id).order("created_at", { ascending: false });
   return NextResponse.json({ rewrites: data ?? [] });
 }

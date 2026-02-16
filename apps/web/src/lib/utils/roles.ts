@@ -22,9 +22,9 @@ const parentNav: NavItem[] = [
 ];
 
 const studentNav: NavItem[] = [
+  { label: 'My Performance', href: '/performance', icon: 'bar-chart-3' },
   { label: 'Assignments', href: '/assignments', icon: 'clipboard-list' },
   { label: 'Submissions', href: '/submissions', icon: 'file-text' },
-  { label: 'My Performance', href: '/performance', icon: 'bar-chart-3' },
   { label: 'Topics', href: '/topics', icon: 'lightbulb' },
   { label: 'Achievements', href: '/achievements', icon: 'trophy' },
   { label: 'Wishlist', href: '/wishlist', icon: 'star' },
