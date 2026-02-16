@@ -56,6 +56,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       submission_id: id,
       mode: result.mode,
       model_id: process.env.OPENAI_MODEL_PRIMARY ?? "gpt-4o",
+      prompt_version: "rewrite-v1",
       rewritten_text: result.rewrittenText,
       diff_payload: result.diffPayload,
       rationale: result.rationale,
