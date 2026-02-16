@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { formatStatus, formatConfidence } from '@/lib/utils/format';
-import { OcrTextDisplay } from '@/components/submission/ocr-text-display';
+import { OcrSection } from '@/components/submission/ocr-section';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -49,7 +49,10 @@ export default async function SubmissionDetailPage({ params }: Props) {
               </span>
             )}
           </div>
-          <OcrTextDisplay text={submission.ocr_text} />
+          <OcrSection
+            text={submission.ocr_text}
+            imageUrls={submission.ocr_image_urls ?? []}
+          />
         </div>
       )}
 
