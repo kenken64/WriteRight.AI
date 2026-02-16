@@ -96,10 +96,21 @@ export function useRequestEvaluation() {
   });
 }
 
+export interface RewriteResult {
+  id: string;
+  submission_id: string;
+  mode: string;
+  rewritten_text: string;
+  diff_payload: unknown;
+  rationale: Record<string, string> | null;
+  target_band: string | null;
+  created_at: string;
+}
+
 export function useRequestRewrite() {
   return useMutation({
     mutationFn: (data: { submissionId: string; mode: 'exam_optimised' | 'clarity_optimised' }) =>
-      apiFetch(`/submissions/${data.submissionId}/rewrite`, { method: 'POST', body: JSON.stringify({ mode: data.mode }) }),
+      apiFetch<{ rewrite: RewriteResult }>(`/submissions/${data.submissionId}/rewrite`, { method: 'POST', body: JSON.stringify({ mode: data.mode }) }),
   });
 }
 

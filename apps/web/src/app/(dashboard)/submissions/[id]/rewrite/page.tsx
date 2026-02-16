@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
-import { useRequestRewrite } from '@/lib/api/client';
+import { useRequestRewrite, useSubmission, useEvaluation } from '@/lib/api/client';
 import { DiffView } from '@/components/feedback/diff-view';
 import Link from 'next/link';
 
@@ -10,10 +10,24 @@ export default function RewritePage() {
   const params = useParams<{ id: string }>();
   const [mode, setMode] = useState<'exam_optimised' | 'clarity_optimised'>('exam_optimised');
   const requestRewrite = useRequestRewrite();
+  const submission = useSubmission(params.id);
+  const evaluation = useEvaluation(params.id);
 
   const handleGenerate = () => {
     requestRewrite.mutate({ submissionId: params.id, mode });
   };
+
+  const rewrite = requestRewrite.data?.rewrite;
+  const originalText = submission.data?.ocr_text ?? '';
+  const currentBand = evaluation.data?.band;
+
+  // Convert rationale object to array for DiffView
+  const rationale = rewrite?.rationale
+    ? Object.entries(rewrite.rationale).map(([category, explanation]) => ({
+        category,
+        explanation: String(explanation),
+      }))
+    : undefined;
 
   return (
     <div className="mx-auto w-full max-w-4xl">
@@ -49,9 +63,26 @@ export default function RewritePage() {
         {requestRewrite.isPending ? 'Generating...' : 'Generate Rewrite'}
       </button>
 
-      {requestRewrite.isSuccess && (
+      {requestRewrite.isError && (
+        <p className="mt-4 text-sm text-red-600">
+          {requestRewrite.error?.message ?? 'Something went wrong. Please try again.'}
+        </p>
+      )}
+
+      {rewrite && (
         <div className="mt-8">
-          <DiffView original="[Original text]" rewritten="[Rewritten text]" />
+          {rewrite.target_band && (
+            <p className="mb-4 text-sm font-medium text-muted-foreground">
+              📈 Rewritten to <span className="font-bold text-primary">Band {rewrite.target_band}</span>
+              {currentBand ? <> from <span className="font-bold">Band {currentBand}</span></> : null}
+            </p>
+          )}
+
+          <DiffView
+            original={originalText}
+            rewritten={rewrite.rewritten_text}
+            rationale={rationale}
+          />
         </div>
       )}
     </div>
