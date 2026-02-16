@@ -99,7 +99,7 @@ export function useRequestEvaluation() {
 export function useRequestRewrite() {
   return useMutation({
     mutationFn: (data: { submissionId: string; mode: 'exam_optimised' | 'clarity_optimised' }) =>
-      apiFetch('/rewrite', { method: 'POST', body: JSON.stringify(data) }),
+      apiFetch(`/submissions/${data.submissionId}/rewrite`, { method: 'POST', body: JSON.stringify({ mode: data.mode }) }),
   });
 }
 
@@ -109,6 +109,14 @@ export function useTopics(filters?: { category?: string; essayType?: string; lev
   return useQuery({
     queryKey: ['topics', filters],
     queryFn: () => apiFetch<{ topics: Topic[] }>(`/topics?${params}`).then((res) => res.topics),
+  });
+}
+
+export function useTopic(id: string | null) {
+  return useQuery({
+    queryKey: ['topic', id],
+    queryFn: () => apiFetch<{ topic: Topic }>(`/topics/${id}`).then((res) => res.topic),
+    enabled: !!id,
   });
 }
 

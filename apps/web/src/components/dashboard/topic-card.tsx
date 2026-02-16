@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import type { Topic } from '@/lib/validators/schemas';
 import { useUpdateTopic, useDeleteTopic } from '@/lib/api/client';
 
@@ -172,6 +173,15 @@ export function TopicCard({ topic, isOwner }: TopicCardProps) {
         {!topic.generated_prompts?.title && !topic.generated_prompts?.prompt && (
           <p className="text-sm text-muted-foreground italic">No prompt content generated yet</p>
         )}
+      </div>
+      <div className="mt-3 border-t pt-3">
+        <Link
+          href={`/assignments/new?topicId=${topic.id}`}
+          className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary/90"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v4a2 2 0 0 0 2 2h4"/></svg>
+          Assign
+        </Link>
       </div>
     </div>
   );

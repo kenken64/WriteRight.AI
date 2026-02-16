@@ -1,16 +1,31 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useCreateAssignment } from '@/lib/api/client';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCreateAssignment, useTopic } from '@/lib/api/client';
 import { newAssignmentFormSchema } from '@/lib/validators/schemas';
 
 export default function NewAssignmentPage() {
+  const searchParams = useSearchParams();
+  const topicId = searchParams.get('topicId');
+  const { data: topic } = useTopic(topicId);
+
   const [essayType, setEssayType] = useState<'situational' | 'continuous'>('situational');
   const [essaySubType, setEssaySubType] = useState('letter');
   const [prompt, setPrompt] = useState('');
   const [wordCountMin, setWordCountMin] = useState(250);
   const [wordCountMax, setWordCountMax] = useState(500);
+  const [prefilled, setPrefilled] = useState(false);
+
+  useEffect(() => {
+    if (topic && !prefilled) {
+      const type = topic.essay_type ?? 'situational';
+      setEssayType(type);
+      setEssaySubType(type === 'situational' ? 'letter' : 'narrative');
+      setPrompt(topic.generated_prompts?.prompt ?? '');
+      setPrefilled(true);
+    }
+  }, [topic, prefilled]);
 
   const handleWordCount = (value: string, setter: (v: number) => void) => {
     const num = parseInt(value, 10);
@@ -48,12 +63,17 @@ export default function NewAssignmentPage() {
     }
 
     try {
+      const guidingPoints = topic?.generated_prompts?.guidingPoints;
       await createAssignment.mutateAsync({
         essay_type: result.data.essayType,
         essay_sub_type: result.data.essaySubType as any,
         prompt: result.data.prompt,
         word_count_min: result.data.wordCountMin,
         word_count_max: result.data.wordCountMax,
+        ...(topicId ? { topic_id: topicId } : {}),
+        ...(Array.isArray(guidingPoints) && guidingPoints.length > 0
+          ? { guiding_points: guidingPoints }
+          : {}),
       });
       router.push('/assignments');
     } catch (err: any) {
@@ -64,6 +84,12 @@ export default function NewAssignmentPage() {
   return (
     <div className="mx-auto w-full max-w-2xl">
       <h1 className="text-2xl font-bold md:text-3xl">Create Assignment</h1>
+      {topic?.generated_prompts?.title && (
+        <div className="mt-4 rounded-md border border-primary/20 bg-primary/5 px-4 py-3">
+          <p className="text-xs font-medium text-muted-foreground">From topic</p>
+          <p className="text-sm font-medium">{topic.generated_prompts.title}</p>
+        </div>
+      )}
       <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-6">
         <div>
           <label className="block text-sm font-medium">Essay Type</label>
