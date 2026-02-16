@@ -6,12 +6,17 @@ import { extractTextFromPdf } from "./pdf-extractor";
 import { extractTextFromWord } from "./word-extractor";
 
 const OCR_SYSTEM_PROMPT = `You are an OCR engine specialised in reading handwritten English essays by Singaporean secondary school students.
-Extract ALL text exactly as written, preserving:
-- Paragraph breaks
-- Crossed-out words (mark as [crossed out: word])
-- Illegible words (mark as [illegible])
-- Spelling errors (preserve them, do not correct)
-Output the raw transcription only, no commentary.`;
+Convert the handwritten text to well-formatted Markdown. Preserve the document structure including:
+- Paragraph breaks (use double newlines)
+- Line breaks where the student intended them
+- Indentation (use blockquotes if needed)
+- Headings (use ## for headings)
+- Addresses, dates, salutations, and closings (preserve letter formatting)
+- Lists (use - or 1. as appropriate)
+- Crossed-out words (mark as ~~crossed out: word~~)
+- Illegible words (mark as **[illegible]**)
+- Spelling errors (preserve them exactly, do not correct)
+Use appropriate Markdown syntax. Output only the Markdown-formatted transcription, no commentary.`;
 
 export async function extractTextFromImages(imageUrls: string[]): Promise<OcrResult> {
   const pages: OcrPage[] = [];
@@ -21,7 +26,7 @@ export async function extractTextFromImages(imageUrls: string[]): Promise<OcrRes
       const text = await visionCompletion(
         OCR_SYSTEM_PROMPT,
         [imageUrls[i]],
-        `Transcribe page ${i + 1} of the handwritten essay. Output only the text.`,
+        `Transcribe page ${i + 1} of the handwritten essay. Convert to well-formatted Markdown.`,
         { maxTokens: 3000 }
       );
 

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { formatStatus, formatConfidence } from '@/lib/utils/format';
+import { OcrTextDisplay } from '@/components/submission/ocr-text-display';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -48,7 +49,7 @@ export default async function SubmissionDetailPage({ params }: Props) {
               </span>
             )}
           </div>
-          <p className="mt-4 whitespace-pre-wrap text-sm">{submission.ocr_text}</p>
+          <OcrTextDisplay text={submission.ocr_text} />
         </div>
       )}
 

@@ -90,9 +90,31 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         ocrText = ocrResult.text;
         console.log(`[finalize:bg] OCR complete — text length: ${ocrText?.length ?? 0}, confidence: ${ocrResult.confidence}`);
 
+        // Copy original images to ocr-images bucket for permanent storage
+        const ocrImageUrls: string[] = [];
+        for (const ref of submission.image_refs as string[]) {
+          try {
+            const { data: fileData } = await admin.storage.from("submissions").download(ref);
+            if (fileData) {
+              const ocrPath = `${id}/${ref.split("/").pop()}`;
+              const arrayBuffer = await fileData.arrayBuffer();
+              await admin.storage.from("ocr-images").upload(ocrPath, arrayBuffer, {
+                contentType: fileData.type || "image/jpeg",
+                upsert: true,
+              });
+              const { data: urlData } = admin.storage.from("ocr-images").getPublicUrl(ocrPath);
+              if (urlData?.publicUrl) ocrImageUrls.push(urlData.publicUrl);
+            }
+          } catch (copyErr: any) {
+            console.warn(`[finalize:bg] Failed to copy image ${ref} to ocr-images:`, copyErr.message);
+          }
+        }
+        console.log(`[finalize:bg] Copied ${ocrImageUrls.length} image(s) to ocr-images bucket`);
+
         await admin.from("submissions").update({
           ocr_text: ocrResult.text,
           ocr_confidence: ocrResult.confidence,
+          ocr_image_urls: ocrImageUrls,
           status: "ocr_complete",
           updated_at: new Date().toISOString(),
         }).eq("id", id);
