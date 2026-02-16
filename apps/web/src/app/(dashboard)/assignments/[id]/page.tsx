@@ -24,8 +24,8 @@ export default async function AssignmentDetailPage({ params }: Props) {
           <Link href="/assignments" className="text-sm text-muted-foreground hover:underline">
             ← Back to Assignments
           </Link>
-          <h1 className="mt-2 text-2xl font-bold md:text-3xl break-words">{assignment.prompt}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h1 className="mt-2 text-2xl font-bold md:text-3xl">Assignment</h1>
+          <p className="mt-1 text-xs text-muted-foreground">
             {assignment.essay_type} · {assignment.essay_sub_type} · {assignment.word_count_min}-
             {assignment.word_count_max} words
           </p>
@@ -36,6 +36,13 @@ export default async function AssignmentDetailPage({ params }: Props) {
         >
           Submit Essay
         </Link>
+      </div>
+
+      <div className="mt-6 rounded-lg border bg-white p-4">
+        <h3 className="text-sm font-medium">Prompt</h3>
+        <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-muted-foreground break-words">
+          {assignment.prompt}
+        </p>
       </div>
 
       {assignment.guiding_points && (
