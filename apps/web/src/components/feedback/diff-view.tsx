@@ -18,22 +18,46 @@ interface DiffViewProps {
 }
 
 /**
- * Simple word-level diff when no pre-computed diff_payload is provided.
- * Uses a basic LCS approach on word tokens.
+ * Strip markdown syntax for cleaner diffing (bold, italic, headers, lists markers).
  */
-function computeWordDiff(original: string, rewritten: string): DiffChange[] {
-  const oldWords = original.split(/(\s+)/);
-  const newWords = rewritten.split(/(\s+)/);
+function stripMarkdownSyntax(text: string): string {
+  return text
+    // Remove code fences
+    .replace(/```[\s\S]*?```/g, '')
+    // Remove bold/italic markers
+    .replace(/\*{1,3}(.*?)\*{1,3}/g, '$1')
+    .replace(/_{1,3}(.*?)_{1,3}/g, '$1')
+    // Remove headers
+    .replace(/^#{1,6}\s+/gm, '')
+    // Remove list markers
+    .replace(/^[\s]*[-*+]\s+/gm, '')
+    .replace(/^[\s]*\d+\.\s+/gm, '')
+    .trim();
+}
 
-  // Simple diff using two-pointer with LCS
-  const m = oldWords.length;
-  const n = newWords.length;
+/**
+ * Sentence-level diff for cleaner results (avoids breaking on markdown syntax).
+ */
+function splitSentences(text: string): string[] {
+  // Split on sentence boundaries, keeping the delimiter
+  return text.split(/(?<=[.!?])\s+/).filter(Boolean);
+}
 
-  // For performance, use a simple O(mn) DP
+function computeSentenceDiff(original: string, rewritten: string): DiffChange[] {
+  const cleanOrig = stripMarkdownSyntax(original);
+  const cleanRewrite = stripMarkdownSyntax(rewritten);
+
+  const oldSentences = splitSentences(cleanOrig);
+  const newSentences = splitSentences(cleanRewrite);
+
+  const m = oldSentences.length;
+  const n = newSentences.length;
+
+  // LCS DP
   const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
-      if (oldWords[i - 1] === newWords[j - 1]) {
+      if (oldSentences[i - 1] === newSentences[j - 1]) {
         dp[i][j] = dp[i - 1][j - 1] + 1;
       } else {
         dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
@@ -42,28 +66,28 @@ function computeWordDiff(original: string, rewritten: string): DiffChange[] {
   }
 
   // Backtrack
-  const changes: DiffChange[] = [];
-  let i = m, j = n;
   const stack: DiffChange[] = [];
+  let i = m, j = n;
   while (i > 0 || j > 0) {
-    if (i > 0 && j > 0 && oldWords[i - 1] === newWords[j - 1]) {
-      stack.push({ type: 'unchanged', value: oldWords[i - 1] });
+    if (i > 0 && j > 0 && oldSentences[i - 1] === newSentences[j - 1]) {
+      stack.push({ type: 'unchanged', value: oldSentences[i - 1] });
       i--; j--;
     } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
-      stack.push({ type: 'add', value: newWords[j - 1] });
+      stack.push({ type: 'add', value: newSentences[j - 1] });
       j--;
     } else {
-      stack.push({ type: 'remove', value: oldWords[i - 1] });
+      stack.push({ type: 'remove', value: oldSentences[i - 1] });
       i--;
     }
   }
   stack.reverse();
 
-  // Merge consecutive same-type changes
+  // Merge consecutive same-type
+  const changes: DiffChange[] = [];
   for (const change of stack) {
     const last = changes[changes.length - 1];
     if (last && last.type === change.type) {
-      last.value += change.value;
+      last.value += ' ' + change.value;
     } else {
       changes.push({ ...change });
     }
@@ -74,29 +98,28 @@ function computeWordDiff(original: string, rewritten: string): DiffChange[] {
 
 function DiffHighlightedText({ diff, side }: { diff: DiffChange[]; side: 'original' | 'rewritten' }) {
   return (
-    <span className="whitespace-pre-wrap text-sm leading-relaxed">
+    <div className="whitespace-pre-wrap text-sm leading-relaxed">
       {diff.map((change, i) => {
         if (change.type === 'unchanged') {
-          return <span key={i}>{change.value}</span>;
+          return <span key={i}>{change.value} </span>;
         }
         if (side === 'original' && change.type === 'remove') {
           return (
             <span key={i} className="bg-red-100 text-red-800 line-through decoration-red-400">
-              {change.value}
+              {change.value}{' '}
             </span>
           );
         }
         if (side === 'rewritten' && change.type === 'add') {
           return (
             <span key={i} className="bg-green-100 text-green-800">
-              {change.value}
+              {change.value}{' '}
             </span>
           );
         }
-        // Skip: removals on rewritten side, additions on original side
         return null;
       })}
-    </span>
+    </div>
   );
 }
 
@@ -104,14 +127,13 @@ export function DiffView({ original, rewritten, diffPayload, rationale }: DiffVi
   const diff = useMemo(() => {
     if (diffPayload && diffPayload.length > 0) return diffPayload;
     if (!original || !rewritten) return [];
-    return computeWordDiff(original, rewritten);
+    return computeSentenceDiff(original, rewritten);
   }, [original, rewritten, diffPayload]);
 
   const hasDiff = diff.length > 0;
 
   return (
     <div>
-      {/* Side-by-side on desktop, stacked on mobile */}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <div className="rounded-lg border bg-white p-4">
           <h3 className="mb-3 text-sm font-medium text-muted-foreground">📝 Original</h3>

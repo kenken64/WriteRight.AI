@@ -110,10 +110,25 @@ export interface RewriteResult {
   created_at: string;
 }
 
+export function useRewrites(submissionId: string) {
+  return useQuery({
+    queryKey: ['rewrites', submissionId],
+    queryFn: () =>
+      apiFetch<{ rewrites: RewriteResult[] }>(`/submissions/${submissionId}/rewrite`).then(
+        (res) => res.rewrites,
+      ),
+    enabled: !!submissionId,
+  });
+}
+
 export function useRequestRewrite() {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: { submissionId: string; mode: 'exam_optimised' | 'clarity_optimised' }) =>
       apiFetch<{ rewrite: RewriteResult }>(`/submissions/${data.submissionId}/rewrite`, { method: 'POST', body: JSON.stringify({ mode: data.mode }) }),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ['rewrites', variables.submissionId] });
+    },
   });
 }
 

@@ -1,10 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams } from 'next/navigation';
-import { useRequestRewrite, useSubmission, useEvaluation } from '@/lib/api/client';
+import { useRequestRewrite, useRewrites, useSubmission, useEvaluation, type RewriteResult } from '@/lib/api/client';
 import { DiffView } from '@/components/feedback/diff-view';
 import Link from 'next/link';
+
+/** Strip markdown code-fence wrappers that the OCR pipeline sometimes adds. */
+function stripMarkdownFences(text: string): string {
+  return text
+    .replace(/^\s*```(?:markdown|md)?\s*\n?/i, '')
+    .replace(/\n?\s*```\s*$/i, '')
+    .trim();
+}
 
 export default function RewritePage() {
   const params = useParams<{ id: string }>();
@@ -12,13 +20,25 @@ export default function RewritePage() {
   const requestRewrite = useRequestRewrite();
   const submission = useSubmission(params.id);
   const evaluation = useEvaluation(params.id);
+  const existingRewrites = useRewrites(params.id);
 
   const handleGenerate = () => {
     requestRewrite.mutate({ submissionId: params.id, mode });
   };
 
-  const rewrite = requestRewrite.data?.rewrite;
-  const originalText = submission.data?.ocr_text ?? '';
+  // Show mutation result immediately, fall back to latest persisted rewrite
+  const rewrite: RewriteResult | undefined = useMemo(() => {
+    if (requestRewrite.data?.rewrite) return requestRewrite.data.rewrite;
+    if (existingRewrites.data && existingRewrites.data.length > 0) {
+      // Latest first (sorted by created_at desc)
+      return [...existingRewrites.data].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      )[0];
+    }
+    return undefined;
+  }, [requestRewrite.data, existingRewrites.data]);
+
+  const originalText = stripMarkdownFences(submission.data?.ocr_text ?? '');
   const currentBand = evaluation.data?.band;
 
   // Convert rationale object to array for DiffView
@@ -80,7 +100,7 @@ export default function RewritePage() {
 
           <DiffView
             original={originalText}
-            rewritten={rewrite.rewritten_text}
+            rewritten={stripMarkdownFences(rewrite.rewritten_text)}
             diffPayload={rewrite.diff_payload as Array<{ type: 'add' | 'remove' | 'unchanged'; value: string }> | undefined}
             rationale={rationale}
           />
