@@ -29,6 +29,18 @@
 | EssayGrader.ai | US-centric rubrics, no OCR for handwritten | SG O/A Level rubrics, handwriting OCR |
 | School teachers | Overworked, 2-4 week turnaround | <5 min feedback, unlimited practice |
 
+### 1.6 Singapore Secondary Education Context
+
+Secondary education in Singapore typically lasts four to five years:
+
+- **Four-Year Course (Express):** Primarily for Express stream students (and some Normal Academic students) taking the GCE 'O' Level examinations.
+- **Five-Year Course (Normal):** For Normal (Academic) and Normal (Technical) students who take the GCE 'N' Levels in their 4th year and often the GCE 'O' Levels in their 5th year.
+- **Integrated Programme (IP):** A direct, 6-year route (4 years secondary + 2 years junior college) that skips the GCE 'O' Levels, leading directly to the A-Levels or equivalent.
+
+> **Note:** The Ministry of Education is transitioning to Full Subject-Based Banding (FSBB), which replaces traditional streaming, but the 4-to-5-year structure largely remains as of 2026.
+
+**Supported student levels:** Secondary 1, Secondary 2, Secondary 3, Secondary 4, Secondary 5
+
 ---
 
 ## 2. Assessment Truth Model (Locked)
@@ -191,7 +203,7 @@ Two modes for generating practice essay topics:
 - System curates trending topics from SG news sources weekly
 - AI generates age-appropriate, MOE-style prompts from curated topics
 - Topics categorised: Environment, Technology, Social Issues, Education, Health, Current Affairs
-- Filterable by: essay type, level (Sec 3/4/5), difficulty
+- Filterable by: essay type, level (Sec 1-5), difficulty
 - Content moderation: auto-filter inappropriate themes; human review for edge cases
 - Refresh cadence: weekly batch + on-demand generation
 
@@ -225,7 +237,7 @@ Two modes for generating practice essay topics:
 
 ### 8.1 First-Time Parent Flow
 1. Register (email or mobile)
-2. Add student profile (name, level: Sec 3/4/5)
+2. Add student profile (name, level: Sec 1-5)
 3. **Interactive demo:** System marks a pre-loaded sample essay in real-time, explaining each score
 4. Guided first submission with tooltips
 5. Post-first-feedback survey: "Did this match your expectations?"
@@ -617,7 +629,7 @@ User
   notificationPrefs (JSON), createdAt, updatedAt
 
 StudentProfile
-  id, userId, displayName, level (sec3|sec4|sec5), linkedParentIds[], createdAt
+  id, userId, displayName, level (sec1|sec2|sec3|sec4|sec5), linkedParentIds[], createdAt
 
 Topic
   id, source (upload|trending|manual), sourceText, sourceImageRefs[],
