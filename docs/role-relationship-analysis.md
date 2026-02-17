@@ -201,6 +201,75 @@ Ship core product → get 50+ users → then add feedback system. Premature for 
 
 ---
 
+## Student-Controlled Essay Visibility (2025-07-26)
+
+### The Problem
+What if a student doesn't want to share their work with their guardian, only with their teacher — or both, or neither?
+
+**Core conflict:** Guardian is paying for the service. Can a paying adult be locked out of content they're funding?
+
+### Options Considered
+
+#### Option A: Full Student Control
+- Student sets visibility per essay (guardian: yes/no, teacher: yes/no)
+- Pro: Respects autonomy, encourages honest writing
+- Con: Guardian pays but can't see → support nightmare
+
+#### Option B: Guardian Always Sees, Teacher Is Opt-In
+- Guardian always has access (non-negotiable)
+- Student chooses which teacher(s) to submit to
+- Pro: Simple, clear billing relationship
+- Con: Doesn't address sensitive content scenarios (e.g. essay about personal struggles)
+
+#### Option C: Tiered Visibility ✅ (Recommended for Phase 2)
+
+```
+EssayVisibility
+  ├── essay_id → Essay
+  ├── visibility_level: PRIVATE | TEACHER_ONLY | GUARDIAN_ONLY | ALL
+  ├── teacher_ids: [] (which teachers, if multiple)
+  └── override_by_guardian: boolean (guardian can force-unlock)
+
+GuardianSettings
+  ├── guardian_id → User
+  ├── student_id → User
+  ├── allow_student_privacy: boolean (guardian opts in to respect student hiding)
+  ├── min_visible_percentage: int (e.g. must see at least 50% of submissions)
+  └── privacy_age_threshold: int (auto-allow privacy for 16+?)
+```
+
+### Visibility Resolution Logic
+
+```
+Essay accessed by Guardian?
+  → Check visibility_level != TEACHER_ONLY
+  → Check GuardianSettings.allow_student_privacy
+  → If guardian override = true → always visible
+
+Essay accessed by Teacher?
+  → Check visibility_level != GUARDIAN_ONLY
+  → Check teacher_id IN essay.teacher_ids[]
+  → If not submitted to them → invisible
+```
+
+### Product Philosophy Matrix
+
+| Philosophy | Guardian sees all? | Student hides? | Target market |
+|-----------|-------------------|---------------|--------------|
+| Parental control | ✅ Always | ❌ Never | Primary school, tiger parents |
+| Trust-based | ✅ Default, opt-out | ✅ With guardian consent | Secondary school |
+| Student autonomy | ⚠️ Optional | ✅ Full control | JC/Pre-U, 16+ |
+
+For SG O-Level students (Sec 3-4, age 15-16): **Trust-based** recommended — guardian sees by default, can grant privacy permission.
+
+### MVP Recommendation
+- Guardian always sees (they're paying)
+- Student chooses which teacher(s) to submit to
+- No sibling sharing yet
+- Add student privacy controls in Phase 2
+
+---
+
 ## Overall Recommendations
 
 1. **Use "Guardian" not "Parent"** — covers all caretaker scenarios
