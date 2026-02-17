@@ -132,6 +132,14 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    // Sync display_name to student_profiles so performance page + parent dashboard stay current
+    if (parsed.displayName !== undefined) {
+      await supabase
+        .from('student_profiles')
+        .update({ display_name: parsed.displayName })
+        .eq('user_id', user.id);
+    }
+
     return NextResponse.json({ updated: true });
   } catch (err) {
     if (err instanceof z.ZodError) {

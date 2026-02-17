@@ -19,14 +19,24 @@ export default async function PerformancePage() {
 
   if (!user) redirect('/login');
 
-  // Get student profile
-  const { data: profile } = await supabase
-    .from('student_profiles')
-    .select('id, display_name')
-    .eq('user_id', user.id)
-    .single();
+  // Get student profile and display name from users table (source of truth for settings)
+  const [profileResult, userResult] = await Promise.all([
+    supabase
+      .from('student_profiles')
+      .select('id, display_name')
+      .eq('user_id', user.id)
+      .single(),
+    supabase
+      .from('users')
+      .select('display_name')
+      .eq('id', user.id)
+      .single(),
+  ]);
 
+  const profile = profileResult.data;
   if (!profile) redirect('/assignments');
+
+  const displayName = userResult.data?.display_name || profile.display_name || '';
 
   // Fetch all data in parallel
   const [scoreTrendResult, weaknessResult, streakResult, submissionsResult] =
@@ -168,7 +178,7 @@ export default async function PerformancePage() {
   return (
     <div>
       <h1 className="text-2xl font-bold md:text-3xl">My Performance</h1>
-      <p className="text-gray-500 mt-1">{profile.display_name}</p>
+      <p className="text-gray-500 mt-1">{displayName}</p>
 
       {/* Summary cards */}
       <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
