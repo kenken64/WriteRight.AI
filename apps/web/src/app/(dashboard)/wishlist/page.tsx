@@ -18,22 +18,30 @@ export default function WishlistPage() {
   const addItem = useAddWishlistItem();
   const claimReward = useClaimReward();
 
-  // Get current user's ID from Supabase auth
+  // Resolve student_profiles.id from auth user
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setStudentId(user.id);
+      if (!user) return;
+      supabase
+        .from('student_profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+        .then(({ data }) => {
+          if (data) setStudentId(data.id);
+        });
     });
   }, []);
 
   const handleAdd = async () => {
-    if (!studentId) return;
+    if (!studentId || !title) return;
     await addItem.mutateAsync({
-      student_id: studentId,
+      studentId,
       title,
-      reward_type: rewardType,
-      created_by: 'student',
-    } as any);
+      rewardType,
+      createdBy: 'student',
+    });
     setShowAdd(false);
     setTitle('');
   };

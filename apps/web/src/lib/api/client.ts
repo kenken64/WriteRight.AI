@@ -199,15 +199,22 @@ export function useStreaks(studentId: string) {
 export function useWishlist(studentId: string) {
   return useQuery({
     queryKey: ['wishlist', studentId],
-    queryFn: () => apiFetch<WishlistItem[]>(`/wishlist?studentId=${studentId}`),
+    queryFn: () =>
+      apiFetch<{ items: WishlistItem[] }>(`/wishlist/students/${studentId}`).then(
+        (res) => res.items,
+      ),
+    enabled: !!studentId,
   });
 }
 
 export function useAddWishlistItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<WishlistItem>) =>
-      apiFetch<WishlistItem>('/wishlist', { method: 'POST', body: JSON.stringify(data) }),
+    mutationFn: (data: { studentId: string; title: string; rewardType: string; createdBy: string }) =>
+      apiFetch<{ item: WishlistItem }>(`/wishlist/students/${data.studentId}`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['wishlist'] }),
   });
 }
@@ -216,7 +223,7 @@ export function useClaimReward() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (itemId: string) =>
-      apiFetch(`/wishlist/${itemId}/claim`, { method: 'POST' }),
+      apiFetch(`/wishlist/items/${itemId}/claim`, { method: 'POST' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['wishlist'] });
       qc.invalidateQueries({ queryKey: ['redemptions'] });
