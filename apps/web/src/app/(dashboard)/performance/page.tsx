@@ -29,7 +29,7 @@ export default async function PerformancePage() {
   if (!profile) redirect('/assignments');
 
   // Fetch all data in parallel
-  const [scoreTrendResult, errorCategoriesResult, streakResult, submissionsResult] =
+  const [scoreTrendResult, evaluationsResult, streakResult, submissionsResult] =
     await Promise.all([
       supabase
         .from('student_score_trend')
@@ -37,9 +37,9 @@ export default async function PerformancePage() {
         .eq('student_id', profile.id)
         .order('evaluated_at', { ascending: true }),
       supabase
-        .from('student_error_categories')
-        .select('*')
-        .eq('student_id', profile.id),
+        .from('evaluations')
+        .select('dimension_scores, weaknesses, submissions!inner(assignments!inner(student_id))')
+        .eq('submissions.assignments.student_id', profile.id),
       supabase
         .from('student_streaks')
         .select('current_streak, longest_streak')
@@ -47,13 +47,13 @@ export default async function PerformancePage() {
         .single(),
       supabase
         .from('submissions')
-        .select('created_at')
-        .eq('student_id', profile.id)
+        .select('created_at, assignments!inner(student_id)')
+        .eq('assignments.student_id', profile.id)
         .order('created_at', { ascending: true }),
     ]);
 
   const scoreTrendData = scoreTrendResult.data ?? [];
-  const errorCategoriesData = errorCategoriesResult.data ?? [];
+  const evaluations = evaluationsResult.data ?? [];
   const streak = streakResult.data;
   const submissions = submissionsResult.data ?? [];
 
@@ -88,16 +88,38 @@ export default async function PerformancePage() {
     band: row.band,
   }));
 
-  const dimensionRadarChart = errorCategoriesData.map((row) => ({
-    dimension: row.dimension_name,
-    score: row.avg_score,
-    maxScore: row.max_score,
+  // Aggregate dimension_scores across all evaluations for radar chart
+  const dimensionMap: Record<string, { total: number; maxScore: number; count: number }> = {};
+  for (const row of evaluations) {
+    const dims = row.dimension_scores as { name: string; score: number; maxScore: number }[];
+    if (!Array.isArray(dims)) continue;
+    for (const dim of dims) {
+      const entry = (dimensionMap[dim.name] ??= { total: 0, maxScore: 0, count: 0 });
+      entry.total += dim.score;
+      entry.maxScore = dim.maxScore;
+      entry.count++;
+    }
+  }
+  const dimensionRadarChart = Object.entries(dimensionMap).map(([name, d]) => ({
+    dimension: name,
+    score: Math.round((d.total / d.count) * 10) / 10,
+    maxScore: d.maxScore,
   }));
 
-  const errorCategoriesChart = errorCategoriesData.map((row) => ({
-    category: row.dimension_name,
-    count: row.total_evaluations ?? Math.round(row.avg_score),
-  }));
+  // Extract weakness text and count occurrences for error categories chart
+  const weaknessMap: Record<string, number> = {};
+  for (const row of evaluations) {
+    const weaknesses = row.weaknesses as { text: string; quote: string; suggestion?: string }[];
+    if (!Array.isArray(weaknesses)) continue;
+    for (const w of weaknesses) {
+      const category = w.text.length > 60 ? w.text.slice(0, 57) + '...' : w.text;
+      weaknessMap[category] = (weaknessMap[category] ?? 0) + 1;
+    }
+  }
+  const errorCategoriesChart = Object.entries(weaknessMap)
+    .map(([category, count]) => ({ category, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8);
 
   // Group submissions by ISO week for frequency chart
   const weekCounts: Record<string, number> = {};
