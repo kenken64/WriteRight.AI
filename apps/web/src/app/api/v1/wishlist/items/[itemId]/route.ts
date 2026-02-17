@@ -56,9 +56,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ it
       return NextResponse.json({ error: "Achievement not found" }, { status: 400 });
     }
 
+    // Check if student already unlocked this achievement
+    const { data: alreadyUnlocked } = await auth.supabase
+      .from("student_achievements")
+      .select("id")
+      .eq("student_id", item.student_id)
+      .eq("achievement_id", requiredAchievementId)
+      .single();
+
+    const newStatus = alreadyUnlocked ? "claimable" : "locked";
+
     const { data, error } = await auth.supabase
       .from("wishlist_items")
-      .update({ status: "locked", required_achievement_id: requiredAchievementId })
+      .update({ status: newStatus, required_achievement_id: requiredAchievementId })
       .eq("id", itemId)
       .select()
       .single();
