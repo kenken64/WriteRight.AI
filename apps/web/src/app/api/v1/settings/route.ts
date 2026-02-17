@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 
@@ -139,6 +140,9 @@ export async function PUT(req: NextRequest) {
         .update({ display_name: parsed.displayName })
         .eq('user_id', user.id);
     }
+
+    // Invalidate cached layout so sidebar reflects updated names
+    revalidatePath('/', 'layout');
 
     return NextResponse.json({ updated: true });
   } catch (err) {
