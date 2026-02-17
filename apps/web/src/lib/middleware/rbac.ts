@@ -74,7 +74,7 @@ export async function requireParentOf(
 
   const { count } = await result.supabase
     .from('parent_student_links')
-    .select('id', { count: 'exact', head: true })
+    .select('parent_id', { count: 'exact', head: true })
     .eq('parent_id', result.user.id)
     .eq('student_id', studentId);
 

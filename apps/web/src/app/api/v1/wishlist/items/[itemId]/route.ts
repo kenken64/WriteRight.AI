@@ -32,7 +32,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ it
   // Verify parent is linked to this student
   const { count } = await auth.supabase
     .from("parent_student_links")
-    .select("id", { count: "exact", head: true })
+    .select("parent_id", { count: "exact", head: true })
     .eq("parent_id", auth.user.id)
     .eq("student_id", item.student_id);
 
