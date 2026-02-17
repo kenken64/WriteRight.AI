@@ -112,7 +112,7 @@ export default async function PerformancePage() {
     const weaknesses = row.weaknesses as { text: string; quote: string; suggestion?: string }[];
     if (!Array.isArray(weaknesses)) continue;
     for (const w of weaknesses) {
-      const category = w.text.length > 60 ? w.text.slice(0, 57) + '...' : w.text;
+      const category = w.text.length > 40 ? w.text.slice(0, 37) + '...' : w.text;
       weaknessMap[category] = (weaknessMap[category] ?? 0) + 1;
     }
   }
