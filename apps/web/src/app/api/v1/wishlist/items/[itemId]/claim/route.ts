@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireRole, isAuthError } from "@/lib/middleware/rbac";
+import { createAdminSupabaseClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ itemId: string }> }) {
   const { itemId } = await params;
@@ -41,17 +42,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ite
     if (!ach) return NextResponse.json({ error: "Required achievement not unlocked" }, { status: 403 });
   }
 
+  // Use admin client for writes — students lack INSERT/UPDATE RLS on these tables
+  const admin = createAdminSupabaseClient();
+
   const now = new Date().toISOString();
-  await auth.supabase.from("wishlist_items").update({ status: "claimed", claimed_at: now }).eq("id", itemId);
+  await admin.from("wishlist_items").update({ status: "claimed", claimed_at: now }).eq("id", itemId);
 
   // Get parent ID from link
-  const { data: link } = await auth.supabase
+  const { data: link } = await admin
     .from("parent_student_links")
     .select("parent_id")
     .eq("student_id", item.student_id)
     .single();
 
-  const { data: redemption, error } = await auth.supabase.from("redemptions").insert({
+  const { data: redemption, error } = await admin.from("redemptions").insert({
     wishlist_item_id: itemId,
     student_id: item.student_id,
     parent_id: link?.parent_id ?? null,
