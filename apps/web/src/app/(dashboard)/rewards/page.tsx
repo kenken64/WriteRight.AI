@@ -74,18 +74,32 @@ export default async function RewardsPage({
       created_at: row.created_at,
     }));
 
-    // Fetch achievements for dropdown
+    // Find achievements already linked to active wishlist items (locked/claimable/claimed/fulfilled)
+    const { data: usedItems } = await supabase
+      .from('wishlist_items')
+      .select('required_achievement_id')
+      .in('student_id', linkedStudentIds)
+      .in('status', ['locked', 'claimable', 'claimed', 'fulfilled'])
+      .not('required_achievement_id', 'is', null);
+
+    const usedAchievementIds = new Set(
+      (usedItems ?? []).map((i: any) => i.required_achievement_id),
+    );
+
+    // Fetch achievements for dropdown, excluding already-used ones
     const { data: achievements } = await supabase
       .from('achievements')
       .select('id, name, description, badge_emoji')
       .order('sort_order', { ascending: true });
 
-    achievementOptions = (achievements ?? []).map((a: any) => ({
-      id: a.id,
-      name: a.name,
-      description: a.description,
-      badge_emoji: a.badge_emoji,
-    }));
+    achievementOptions = (achievements ?? [])
+      .filter((a: any) => !usedAchievementIds.has(a.id))
+      .map((a: any) => ({
+        id: a.id,
+        name: a.name,
+        description: a.description,
+        badge_emoji: a.badge_emoji,
+      }));
   }
 
   return (
