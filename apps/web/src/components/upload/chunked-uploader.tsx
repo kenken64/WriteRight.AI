@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Upload, X, CheckCircle, AlertCircle, Image, FileText, File as FileIcon } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
@@ -33,10 +33,12 @@ interface UploadFile {
 export function ChunkedUploader({ assignmentId, maxImages, onComplete }: ChunkedUploaderProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const selected = Array.from(e.target.files ?? []).slice(0, maxImages - files.length);
+  const addFiles = useCallback(
+    (incoming: File[]) => {
+      const selected = incoming.slice(0, maxImages - files.length);
       const newFiles: UploadFile[] = selected.map((file) => ({
         file,
         progress: 0,
@@ -45,6 +47,22 @@ export function ChunkedUploader({ assignmentId, maxImages, onComplete }: Chunked
       setFiles((prev) => [...prev, ...newFiles]);
     },
     [files.length, maxImages],
+  );
+
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      addFiles(Array.from(e.target.files ?? []));
+    },
+    [addFiles],
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      setIsDragging(false);
+      addFiles(Array.from(e.dataTransfer.files));
+    },
+    [addFiles],
   );
 
   const removeFile = (index: number) => {
@@ -98,7 +116,14 @@ export function ChunkedUploader({ assignmentId, maxImages, onComplete }: Chunked
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border-2 border-dashed p-8 text-center">
+      <div
+        onClick={() => inputRef.current?.click()}
+        onDragOver={(e) => e.preventDefault()}
+        onDragEnter={() => setIsDragging(true)}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={handleDrop}
+        className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors ${isDragging ? 'border-primary bg-primary/5' : 'border-gray-300'}`}
+      >
         <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
         <p className="mt-2 text-sm text-muted-foreground">
           Drag and drop files or click to browse
@@ -106,12 +131,16 @@ export function ChunkedUploader({ assignmentId, maxImages, onComplete }: Chunked
         <p className="mt-1 text-xs text-muted-foreground">
           Images (JPEG, PNG, HEIF), PDF, or Word (.docx) · Max {maxImages} files
         </p>
+        <span className="mt-3 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-white">
+          Browse Files
+        </span>
         <input
+          ref={inputRef}
           type="file"
           accept={ACCEPTED_TYPES}
           multiple
           onChange={handleFileSelect}
-          className="mt-4"
+          className="hidden"
         />
       </div>
 

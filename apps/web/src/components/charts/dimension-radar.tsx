@@ -4,8 +4,10 @@ import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Responsi
 /** Abbreviate long dimension names to fit mobile radar chart */
 const DIMENSION_ABBREV: Record<string, string> = {
   'Task Fulfilment': 'Task',
-  'Language & Style': 'Language',
+  'Language & Style': 'Lang/Style',
+  'Language & Expression': 'Lang/Expr',
   'Organisation & Structure': 'Structure',
+  'Organisation & Coherence': 'Coherence',
   'Style & Expression': 'Style',
   'Content & Development': 'Content',
 };

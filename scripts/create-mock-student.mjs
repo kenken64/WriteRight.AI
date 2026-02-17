@@ -209,10 +209,17 @@ async function main() {
     evals.push({
       id, submission_id: submissionIds[i], essay_type: essayType,
       rubric_version: '1184-sw-v1', model_id: 'gpt-4o', prompt_version: 'v1',
-      dimension_scores: [
-        { name: essayType === 'continuous' ? 'Content & Development' : 'Task Fulfilment', score: band * 2, max_score: 10 },
-        { name: essayType === 'continuous' ? 'Language & Organisation' : 'Language', score: band * 4, max_score: 20 },
-      ],
+      dimension_scores: essayType === 'continuous'
+        ? [
+            { name: 'Content & Development', score: band * 2, maxScore: 10, band, justification: 'Mock data' },
+            { name: 'Language & Expression', score: band * 2, maxScore: 10, band, justification: 'Mock data' },
+            { name: 'Organisation & Structure', score: band * 2, maxScore: 10, band, justification: 'Mock data' },
+          ]
+        : [
+            { name: 'Task Fulfilment', score: band * 2, maxScore: 10, band, justification: 'Mock data' },
+            { name: 'Language & Style', score: band * 2, maxScore: 10, band, justification: 'Mock data' },
+            { name: 'Organisation & Coherence', score: band * 2, maxScore: 10, band, justification: 'Mock data' },
+          ],
       total_score: band * 6, band,
       strengths: ['Clear structure', 'Good vocabulary range'],
       weaknesses: [{ dimension: 'Language', text: 'Minor grammatical errors in complex sentences' }],
