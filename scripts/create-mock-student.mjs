@@ -68,35 +68,48 @@ async function main() {
 
   // ── 0. Clean up any previous mock data ──────────────────────
   console.log('0. Cleaning up previous mock data (if any)...');
-  // Find the existing public.users record by email to get the user id
-  const oldUsers = await rpc('users', null, { method: 'GET', query: `?email=eq.${encodeURIComponent(MOCK_EMAIL)}&select=id` }).catch(() => []);
-  const oldUserId = oldUsers?.[0]?.id;
-  if (oldUserId) {
-    // Delete topics created by old user first (FK constraint blocks user deletion)
-    await rpc('topics', null, { method: 'DELETE', query: `?created_by=eq.${oldUserId}` }).catch(() => {});
-    // Now delete the public.users record (cascades to student_profiles, etc.)
-    await rpc('users', null, { method: 'DELETE', query: `?id=eq.${oldUserId}` }).catch((e) => console.log(`   (users cleanup: ${e.message})`));
-    console.log(`   Deleted old public.users record ${oldUserId}`);
+
+  // Helper: delete a user and all related data in correct FK order
+  async function cleanupUser(email) {
+    const users = await rpc('users', null, { method: 'GET', query: `?email=eq.${encodeURIComponent(email)}&select=id` }).catch(() => []);
+    const userId = users?.[0]?.id;
+    if (userId) {
+      // Get student profile if exists
+      const profs = await rpc('student_profiles', null, { method: 'GET', query: `?user_id=eq.${userId}&select=id` }).catch(() => []);
+      const studentId = profs?.[0]?.id;
+      if (studentId) {
+        // Delete submissions → evaluations (cascade) for each assignment
+        const assigns = await rpc('assignments', null, { method: 'GET', query: `?student_id=eq.${studentId}&select=id` }).catch(() => []);
+        for (const a of assigns) {
+          await rpc('submissions', null, { method: 'DELETE', query: `?assignment_id=eq.${a.id}` }).catch(() => {});
+        }
+        await rpc('assignments', null, { method: 'DELETE', query: `?student_id=eq.${studentId}` }).catch(() => {});
+        await rpc('redemptions', null, { method: 'DELETE', query: `?student_id=eq.${studentId}` }).catch(() => {});
+        await rpc('wishlist_items', null, { method: 'DELETE', query: `?student_id=eq.${studentId}` }).catch(() => {});
+      }
+      // Delete parent-side redemptions
+      await rpc('redemptions', null, { method: 'DELETE', query: `?parent_id=eq.${userId}` }).catch(() => {});
+      // Delete topics created by this user
+      await rpc('topics', null, { method: 'DELETE', query: `?created_by=eq.${userId}` }).catch(() => {});
+      // Delete user record (cascades to student_profiles, streaks, etc.)
+      await rpc('users', null, { method: 'DELETE', query: `?id=eq.${userId}` }).catch((e) => console.log(`   (${email} cleanup: ${e.message})`));
+      console.log(`   Deleted public.users ${email}`);
+    }
   }
-  // Delete auth user if exists
+
+  // Clean up both accounts
+  await cleanupUser(PARENT_EMAIL);
+  await cleanupUser(MOCK_EMAIL);
+
+  // Clean up auth users
   const listRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?page=1&per_page=500`, { headers: HEADERS });
   const listData = await listRes.json();
-  const existing = listData.users?.find((u) => u.email === MOCK_EMAIL);
-  if (existing) {
-    await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${existing.id}`, { method: 'DELETE', headers: HEADERS });
-    console.log(`   Deleted old auth user ${existing.id}`);
-  }
-  // Clean up old parent mock data
-  const oldParents = await rpc('users', null, { method: 'GET', query: `?email=eq.${encodeURIComponent(PARENT_EMAIL)}&select=id` }).catch(() => []);
-  const oldParentId = oldParents?.[0]?.id;
-  if (oldParentId) {
-    await rpc('users', null, { method: 'DELETE', query: `?id=eq.${oldParentId}` }).catch((e) => console.log(`   (parent cleanup: ${e.message})`));
-    console.log(`   Deleted old parent public.users record ${oldParentId}`);
-  }
-  const existingParent = listData.users?.find((u) => u.email === PARENT_EMAIL);
-  if (existingParent) {
-    await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${existingParent.id}`, { method: 'DELETE', headers: HEADERS });
-    console.log(`   Deleted old parent auth user ${existingParent.id}`);
+  for (const email of [MOCK_EMAIL, PARENT_EMAIL]) {
+    const existing = listData.users?.find((u) => u.email === email);
+    if (existing) {
+      await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${existing.id}`, { method: 'DELETE', headers: HEADERS });
+      console.log(`   Deleted auth user ${email}`);
+    }
   }
   console.log('   Cleanup done');
 
