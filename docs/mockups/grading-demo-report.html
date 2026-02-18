@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WriteRight SG — Grading Report Demo</title>
+<style>
+  :root {
+    --bg: #f8fafc; --surface: #fff; --text: #1e293b; --muted: #64748b;
+    --accent: #2563eb; --accent-light: #dbeafe;
+    --green: #16a34a; --green-light: #dcfce7; --green-bg: #f0fdf4;
+    --amber: #d97706; --amber-light: #fef3c7; --amber-bg: #fffbeb;
+    --red: #dc2626; --red-light: #fee2e2; --red-bg: #fef2f2;
+    --purple: #7c3aed; --purple-light: #ede9fe;
+    --border: #e2e8f0; --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+
+  .container { max-width: 880px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* Header */
+  .report-header { background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); color: #fff; border-radius: var(--radius); padding: 2rem 2.5rem; margin-bottom: 2rem; }
+  .report-header h1 { font-size: 1.75rem; font-weight: 700; }
+  .report-header .subtitle { opacity: 0.85; margin-top: 0.25rem; font-size: 0.95rem; }
+  .report-meta { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 1.25rem; font-size: 0.85rem; opacity: 0.9; }
+  .report-meta span { display: flex; align-items: center; gap: 0.4rem; }
+
+  /* Score cards */
+  .score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+  .score-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; text-align: center; }
+  .score-card .label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; }
+  .score-card .score { font-size: 2.5rem; font-weight: 800; margin: 0.25rem 0; }
+  .score-card .max { font-size: 0.9rem; color: var(--muted); }
+  .score-card.total { border: 2px solid var(--accent); background: var(--accent-light); }
+  .score-card.total .score { color: var(--accent); }
+  .score-tf .score { color: var(--green); }
+  .score-lang .score { color: var(--purple); }
+
+  /* Band badge */
+  .band-strip { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem; }
+  .band-badge { background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; font-size: 1.1rem; font-weight: 700; padding: 0.5rem 1.25rem; border-radius: 8px; white-space: nowrap; }
+  .band-desc { font-size: 0.9rem; color: var(--muted); }
+
+  /* Sections */
+  .section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem 2rem; margin-bottom: 1.5rem; }
+  .section h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+  .section h3 { font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.5rem; }
+
+  /* Rubric table */
+  table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; font-size: 0.88rem; }
+  th, td { border: 1px solid var(--border); padding: 0.6rem 0.75rem; text-align: left; vertical-align: top; }
+  th { background: #f1f5f9; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  .check { color: var(--green); font-weight: 600; }
+  .partial { color: var(--amber); font-weight: 600; }
+
+  /* Feedback items */
+  .feedback-item { padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 0.75rem; font-size: 0.9rem; }
+  .feedback-strength { background: var(--green-bg); border-left: 3px solid var(--green); }
+  .feedback-improve { background: var(--amber-bg); border-left: 3px solid var(--amber); }
+  .feedback-error { background: var(--red-bg); border-left: 3px solid var(--red); }
+  .feedback-item strong { display: block; margin-bottom: 0.2rem; }
+  .feedback-item .quote { font-style: italic; color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem; }
+
+  /* Essay text */
+  .essay-box { background: #fefce8; border: 1px solid #fde68a; border-radius: 8px; padding: 1.25rem 1.5rem; font-size: 0.9rem; line-height: 1.8; white-space: pre-wrap; }
+  .essay-box .paragraph { margin-bottom: 1rem; }
+
+  /* Assignment box */
+  .assignment-box { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 1.25rem 1.5rem; font-size: 0.9rem; }
+  .assignment-box h4 { font-weight: 600; margin-bottom: 0.5rem; }
+  .assignment-box ul { padding-left: 1.25rem; }
+  .assignment-box li { margin-bottom: 0.3rem; }
+
+  /* Radar chart placeholder */
+  .radar-placeholder { text-align: center; padding: 1.5rem; background: #f8fafc; border-radius: 8px; border: 1px dashed var(--border); }
+  .radar-placeholder .bars { display: flex; flex-direction: column; gap: 0.5rem; max-width: 500px; margin: 0 auto; }
+  .bar-row { display: flex; align-items: center; gap: 0.75rem; font-size: 0.85rem; }
+  .bar-label { width: 140px; text-align: right; color: var(--muted); font-weight: 500; }
+  .bar-track { flex: 1; background: #e2e8f0; border-radius: 4px; height: 20px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; font-size: 0.75rem; color: #fff; font-weight: 600; }
+  .bar-fill.high { background: linear-gradient(90deg, #22c55e, #16a34a); }
+  .bar-fill.mid { background: linear-gradient(90deg, #f59e0b, #d97706); }
+  .bar-fill.low { background: linear-gradient(90deg, #ef4444, #dc2626); }
+
+  .footer { text-align: center; color: var(--muted); font-size: 0.8rem; margin-top: 2rem; padding: 1rem; }
+
+  @media (max-width: 640px) {
+    .score-grid { grid-template-columns: 1fr; }
+    .band-strip { flex-direction: column; text-align: center; }
+    .report-meta { flex-direction: column; gap: 0.5rem; }
+    .bar-label { width: 100px; font-size: 0.8rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="report-header">
+    <h1>📊 Essay Grading Report</h1>
+    <p class="subtitle">WriteRight SG — AI-Powered Feedback (MOE 1184 Aligned)</p>
+    <div class="report-meta">
+      <span>👤 Huang Tuoxuan</span>
+      <span>🏫 Nan Hua High School, Class 309</span>
+      <span>📝 Section B — Situational Writing</span>
+      <span>📅 Graded: 18 Feb 2026</span>
+    </div>
+  </div>
+
+  <!-- Scores -->
+  <div class="score-grid">
+    <div class="score-card score-tf">
+      <div class="label">Task Fulfilment</div>
+      <div class="score">9</div>
+      <div class="max">out of 10</div>
+    </div>
+    <div class="score-card score-lang">
+      <div class="label">Language</div>
+      <div class="score">16</div>
+      <div class="max">out of 20</div>
+    </div>
+    <div class="score-card total">
+      <div class="label">Total Score</div>
+      <div class="score">25</div>
+      <div class="max">out of 30</div>
+    </div>
+  </div>
+
+  <!-- Band -->
+  <div class="band-strip">
+    <div class="band-badge">Band 4 — Good</div>
+    <div class="band-desc">The essay demonstrates strong task awareness, effective use of source material, and generally fluent language with minor errors. Well above average for Sec 3 level.</div>
+  </div>
+
+  <!-- Dimension Breakdown -->
+  <div class="section">
+    <h2>📈 Dimension Breakdown</h2>
+    <div class="radar-placeholder">
+      <div class="bars">
+        <div class="bar-row">
+          <span class="bar-label">Task Fulfilment</span>
+          <div class="bar-track"><div class="bar-fill high" style="width:90%">90%</div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">Content Coverage</span>
+          <div class="bar-track"><div class="bar-fill high" style="width:95%">95%</div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">Tone & Register</span>
+          <div class="bar-track"><div class="bar-fill high" style="width:90%">90%</div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">Grammar</span>
+          <div class="bar-track"><div class="bar-fill mid" style="width:75%">75%</div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">Vocabulary</span>
+          <div class="bar-track"><div class="bar-fill high" style="width:85%">85%</div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">Sentence Variety</span>
+          <div class="bar-track"><div class="bar-fill high" style="width:85%">85%</div></div>
+        </div>
+        <div class="bar-row">
+          <span class="bar-label">Organisation</span>
+          <div class="bar-track"><div class="bar-fill high" style="width:90%">90%</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assignment -->
+  <div class="section">
+    <h2>📋 Assignment Brief</h2>
+    <div class="assignment-box">
+      <h4>Section B [30 marks] — Situational Writing: Persuasive Speech</h4>
+      <p>Based on a flyer from the Singapore Green Society about <strong>Environmental Issues</strong> (e-waste and traditional light bulbs), write a speech to address the school during assembly to:</p>
+      <ul>
+        <li>Explain what the issue is about</li>
+        <li>Explain the impact of the issue on our environment</li>
+        <li>Recommend two solutions students can adopt to tackle the issue</li>
+        <li>Suggest two possible ways that students can take to raise awareness on this issue</li>
+      </ul>
+      <p style="margin-top:0.5rem; color: var(--muted); font-size: 0.85rem;">250–350 words • Clear, accurate English • Persuasive tone • Use own words as much as possible</p>
+    </div>
+  </div>
+
+  <!-- Task Fulfilment Detail -->
+  <div class="section">
+    <h2>✅ Task Fulfilment — 9/10</h2>
+    <table>
+      <thead>
+        <tr><th>Requirement</th><th>Status</th><th>Evidence</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Speech format (greeting + closing)</td>
+          <td class="check">✓ Full</td>
+          <td>"Good morning Mr Chew, teachers and fellow nanhuanians" … "Thank you for listening"</td>
+        </tr>
+        <tr>
+          <td>Persuasive tone</td>
+          <td class="check">✓ Full</td>
+          <td>Strong rhetorical questions, imperatives ("Let us act now"), emotional appeals throughout</td>
+        </tr>
+        <tr>
+          <td>① Explain the issue</td>
+          <td class="check">✓ Full</td>
+          <td>Clearly explains traditional incandescent bulbs are inefficient, waste energy, and contribute to pollution</td>
+        </tr>
+        <tr>
+          <td>② Impact on environment</td>
+          <td class="check">✓ Full</td>
+          <td>Links to air pollution → carbon emissions → global warming → melting ice caps, extreme weather, disrupted ecosystems</td>
+        </tr>
+        <tr>
+          <td>③ Two solutions</td>
+          <td class="check">✓ Full</td>
+          <td>1) Switch to LEDs 2) Switch off lights when not needed</td>
+        </tr>
+        <tr>
+          <td>④ Two ways to raise awareness</td>
+          <td class="check">✓ Full</td>
+          <td>1) "Switch it Off, Save the Earth" campaign with reminders 2) Create short videos comparing energy waste</td>
+        </tr>
+        <tr>
+          <td>Uses flyer information</td>
+          <td class="check">✓ Full</td>
+          <td>References 25–80% more energy stat, energy-efficient alternatives, household savings</td>
+        </tr>
+        <tr>
+          <td>Word count (250–350)</td>
+          <td class="partial">⚠ Slightly over</td>
+          <td>Estimated ~380 words — exceeds upper limit by ~30 words</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:0.88rem; color: var(--muted); margin-top:0.5rem;">All four content points addressed thoroughly. Minor deduction for exceeding word count.</p>
+  </div>
+
+  <!-- Language Detail -->
+  <div class="section">
+    <h2>🔤 Language — 16/20</h2>
+
+    <h3>💪 Strengths</h3>
+
+    <div class="feedback-strength feedback-item">
+      <strong>Excellent rhetorical technique</strong>
+      Effective use of rhetorical questions to engage the audience and build persuasive momentum.
+      <div class="quote">"Is it wise to keep using something that wastes energy, harms the environment and wastes our own money? Clearly not."</div>
+    </div>
+
+    <div class="feedback-strength feedback-item">
+      <strong>Strong vocabulary range</strong>
+      Sophisticated word choices appropriate for a Sec 3 student: "incandescent", "inefficient", "ecosystems", "disrupted", "consequences".
+    </div>
+
+    <div class="feedback-strength feedback-item">
+      <strong>Impressive concluding paragraph</strong>
+      Powerful tricolon structure with wordplay on "switch" creates a memorable, persuasive ending.
+      <div class="quote">"Switch to efficient bulbs, switch off unused lights, and most importantly, switch on our responsibility."</div>
+    </div>
+
+    <div class="feedback-strength feedback-item">
+      <strong>Good sentence variety</strong>
+      Mix of short punchy sentences, compound sentences, and rhetorical questions keeps the speech dynamic and engaging.
+    </div>
+
+    <h3>⚠️ Areas for Improvement</h3>
+
+    <div class="feedback-improve feedback-item">
+      <strong>Parallel structure error</strong>
+      When using parallel constructions, verb forms must match.
+      <div class="quote">❌ "the generation that saves Earth, not destroy it"<br>✅ "the generation that saves Earth, not destroys it" — or — "that saves, not destroys, Earth"</div>
+    </div>
+
+    <div class="feedback-improve feedback-item">
+      <strong>Missing article</strong>
+      "Earth" used as a proper noun inconsistently. When preceded by "the", use lowercase; when used as a name, no article.
+      <div class="quote">❌ "saves Earth" / "a Wasted Earth"<br>✅ "saves the Earth" / "a wasted Earth" (consistent capitalisation)</div>
+    </div>
+
+    <div class="feedback-improve feedback-item">
+      <strong>Redundant phrasing</strong>
+      "Switch off switches after use" is awkward — repetition of "switch".
+      <div class="quote">✅ "turn off switches after use" or "switch off lights after use"</div>
+    </div>
+
+    <h3>🔴 Errors</h3>
+
+    <div class="feedback-error feedback-item">
+      <strong>Subject-verb agreement</strong>
+      <div class="quote">❌ "not destroy it" → ✅ "not destroys it" (subject is "generation", 3rd person singular)</div>
+    </div>
+
+    <div class="feedback-error feedback-item">
+      <strong>Awkward construction</strong>
+      <div class="quote">❌ "create short videos showing comparing how much energy…"<br>✅ "create short videos comparing how much energy…" (remove "showing")</div>
+    </div>
+
+    <div class="feedback-error feedback-item">
+      <strong>Missing comma</strong>
+      <div class="quote">❌ "it is not just careless it is extremely wasteful"<br>✅ "it is not just careless, it is extremely wasteful" (or use semicolon)</div>
+    </div>
+  </div>
+
+  <!-- Model Rewrite (excerpt) -->
+  <div class="section">
+    <h2>✨ Model Rewrite — Key Improvements</h2>
+    <p style="font-size:0.88rem; color:var(--muted); margin-bottom:1rem;">Below are suggested rewrites for the weakest passages. The student's overall writing quality is high — only minor polish needed.</p>
+
+    <table>
+      <thead><tr><th style="width:48%">Original</th><th style="width:48%">Suggested Rewrite</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>One small bulb may seem very insignificant, but multiplied by thousands to millions of households, it becomes a silent and serious environmental disaster.</td>
+          <td>One small bulb may seem insignificant, but when multiplied across millions of households, it becomes a silent yet <strong>devastating</strong> environmental disaster.</td>
+        </tr>
+        <tr>
+          <td>Another way is to create short videos showing comparing how much energy is wasted when each light is left on, urging others to switch their bulbs.</td>
+          <td>Another way is to create short videos <strong>comparing</strong> how much energy is wasted when lights are left on, <strong>motivating</strong> others to switch to efficient bulbs.</td>
+        </tr>
+        <tr>
+          <td>Let us be the generation that saves Earth, not destroy it.</td>
+          <td>Let us be the generation that <strong>saves the Earth — not destroys it</strong>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Transcribed Essay -->
+  <div class="section">
+    <h2>📝 Transcribed Student Essay</h2>
+    <div class="essay-box">
+<div class="paragraph"><strong>Situational Writing</strong></div>
+
+<div class="paragraph">Good morning Mr Chew, teachers and Mr Ng, teachers and fellow nanhuanians.</div>
+
+<div class="paragraph">Imagine this: every time you switch on a light, you are also switching on pollution. Every time your room brightens, the air outside darkens. Sounds impossible, right? Except it is not, it is happening — quietly, daily, and right under our noses. My name is Huang Tuoxuan and I am from Class 309, and today I am speaking because I am deeply concerned about an environmental issue that many of us overlook: the continued use of traditional incandescent light bulbs.</div>
+
+<div class="paragraph">We often think that light bulbs are harmless. After all, they do not smoke, they do not have a leakage, and they do not make constant loud noises. But behind their warm glow lies a costly truth: traditional light bulbs are highly inefficient, wasting huge amounts of energy. In fact, they consume far more electricity than energy-efficient bulbs. And the more electricity we use, the more fossil fuels will be burned, and more greenhouse gases will be released into our atmosphere.</div>
+
+<div class="paragraph">So let me ask you: Is it wise to keep using something that wastes energy, harms the environment and wastes our own money? Clearly not. Is it sensible to choose convenience today, only to suffer consequences tomorrow? The impact is clear. More energy consumption leads to more air pollution. More air pollution leads to rising carbon emissions. More carbon emissions lead to global warming — melting ice caps, extreme weather conditions and disrupted ecosystems. One small bulb may seem very insignificant, but multiplied by thousands to millions of households, it becomes a silent and serious environmental disaster.</div>
+
+<div class="paragraph">So what can we do? First, we can switch to energy-efficient bulbs such as LEDs. This is a simple change with powerful results. LEDs use far less electricity and last much longer. Why keep paying for something that gives less instead of getting the best performance per dollar option? Second, we can develop the habit of switching off lights when they are not needed. A classroom left lit unused during recess is not just careless, it is extremely wasteful. Wasted energy becomes a wasted Earth.</div>
+
+<div class="paragraph">But actions must begin from awareness. One way students can raise awareness is by launching a "Switch it Off, Save the Earth" campaign, by placing reminders to let students switch off switches after use. Another way is to create short videos comparing how much energy is wasted when each light is left on, urging others to switch their bulbs.</div>
+
+<div class="paragraph">Schoolmates, the purpose of my speech is simple: to urge all of us to stop relying on traditional light bulbs and start adopting energy-efficient forms of lighting. If we want a brighter future, we must stop using bulbs that darken our planet before it is too late. Let us act now, switch to efficient bulbs, switch off unused lights, and most importantly, switch on our responsibility. Imagine a future where our skies are cleaner, air is fresher, water more sparkling, not because of government policies or laws, but because students decided to take a stand. Let us be the generation that saves Earth, not destroy it.</div>
+
+<div class="paragraph">Thank you for listening.</div>
+    </div>
+  </div>
+
+  <!-- Overall Summary -->
+  <div class="section">
+    <h2>🎯 Overall Assessment</h2>
+    <p>This is a <strong>strong essay</strong> for a Sec 3 student. Huang Tuoxuan demonstrates:</p>
+    <ul style="padding-left:1.25rem; margin-top:0.5rem;">
+      <li><strong>Excellent task awareness</strong> — all 4 content points addressed with specific, relevant details</li>
+      <li><strong>Mature writing voice</strong> — effective rhetorical questions, tricolon structures, and emotional appeals appropriate for a persuasive speech</li>
+      <li><strong>Good use of source material</strong> — integrates flyer information naturally without copying</li>
+      <li><strong>Minor language errors</strong> — parallel structure, occasional redundancy, and article usage are the main areas to work on</li>
+    </ul>
+    <p style="margin-top:1rem;"><strong>Next steps:</strong> Focus on proofreading for grammatical consistency (especially parallel structures) and tightening wordy passages. Word count discipline would also help — aim to stay within the 250–350 word limit.</p>
+  </div>
+
+  <div class="footer">
+    <p>Generated by WriteRight SG — AI Essay Feedback (MOE 1184 Aligned)</p>
+    <p>This is a demo grading report. Scores are AI-generated and should be reviewed by a qualified teacher.</p>
+  </div>
+
+</div>
+</body>
+</html>
