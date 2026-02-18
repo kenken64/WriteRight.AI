@@ -98,7 +98,7 @@ function computeSentenceDiff(original: string, rewritten: string): DiffChange[] 
 
 function DiffHighlightedText({ diff, side }: { diff: DiffChange[]; side: 'original' | 'rewritten' }) {
   return (
-    <div className="whitespace-pre-wrap text-sm leading-relaxed">
+    <div className="whitespace-pre-line break-words text-sm leading-relaxed">
       {diff.map((change, i) => {
         if (change.type === 'unchanged') {
           return <span key={i}>{change.value} </span>;
@@ -133,24 +133,24 @@ export function DiffView({ original, rewritten, diffPayload, rationale }: DiffVi
   const hasDiff = diff.length > 0;
 
   return (
-    <div>
+    <div className="overflow-hidden">
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-        <div className="rounded-lg border bg-white p-4">
+        <div className="min-w-0 rounded-lg border bg-white p-4">
           <h3 className="mb-3 text-sm font-medium text-muted-foreground">📝 Original</h3>
           {hasDiff ? (
             <DiffHighlightedText diff={diff} side="original" />
           ) : (
-            <div className="prose prose-sm max-w-none">
+            <div className="prose prose-sm max-w-none break-words">
               <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{original}</ReactMarkdown>
             </div>
           )}
         </div>
-        <div className="rounded-lg border border-green-200 bg-green-50/50 p-4">
+        <div className="min-w-0 rounded-lg border border-green-200 bg-green-50/50 p-4">
           <h3 className="mb-3 text-sm font-medium text-green-700">✨ Rewrite (Reference Model Answer)</h3>
           {hasDiff ? (
             <DiffHighlightedText diff={diff} side="rewritten" />
           ) : (
-            <div className="prose prose-sm max-w-none">
+            <div className="prose prose-sm max-w-none break-words">
               <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{rewritten}</ReactMarkdown>
             </div>
           )}

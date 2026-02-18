@@ -20,11 +20,11 @@ export default async function SubmissionDetailPage({ params }: Props) {
 
   if (!submission) notFound();
 
-  // Generate signed URLs for original uploaded images
+  // Always generate fresh signed URLs from image_refs (reliable, 1-hour expiry).
+  // The stored ocr_image_urls (public bucket) can be stale or inaccessible,
+  // so we prefer freshly signed URLs every page load.
   let imageUrls: string[] = [];
-  if (submission.ocr_image_urls?.length) {
-    imageUrls = submission.ocr_image_urls;
-  } else if (submission.image_refs?.length) {
+  if (submission.image_refs?.length) {
     const admin = createAdminSupabaseClient();
     for (const ref of submission.image_refs as string[]) {
       const { data } = await admin.storage

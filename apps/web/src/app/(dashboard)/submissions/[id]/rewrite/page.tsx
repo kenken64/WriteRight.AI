@@ -63,7 +63,7 @@ export default function RewritePage() {
     : undefined;
 
   return (
-    <div className="mx-auto w-full max-w-4xl">
+    <div className="mx-auto w-full max-w-4xl overflow-hidden px-4 sm:px-0">
       <Link href={`/submissions/${params.id}`} className="text-sm text-muted-foreground hover:underline">
         ← Back to Submission
       </Link>
@@ -147,14 +147,14 @@ export default function RewritePage() {
                   </h4>
                   {rewrite.band_justification.keyChanges.map((change, i) => (
                     <div key={i} className="rounded-md border border-indigo-100 bg-white p-3">
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        <div>
+                      <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
+                        <div className="min-w-0">
                           <span className="text-xs font-medium text-red-600">Before</span>
-                          <p className="mt-0.5 text-sm text-gray-700 italic">&ldquo;{change.original}&rdquo;</p>
+                          <p className="mt-0.5 break-words text-sm text-gray-700 italic">&ldquo;{change.original}&rdquo;</p>
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <span className="text-xs font-medium text-green-600">After</span>
-                          <p className="mt-0.5 text-sm text-gray-700 italic">&ldquo;{change.rewritten}&rdquo;</p>
+                          <p className="mt-0.5 break-words text-sm text-gray-700 italic">&ldquo;{change.rewritten}&rdquo;</p>
                         </div>
                       </div>
                       <p className="mt-2 text-sm text-indigo-700">
@@ -195,7 +195,7 @@ export default function RewritePage() {
                   );
                   return (
                     <div key={idx}>
-                      <p className="text-sm leading-relaxed text-gray-900">{paragraph}</p>
+                      <p className="break-words text-sm leading-relaxed text-gray-900">{paragraph}</p>
                       {annotation && (
                         <div className="my-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50/60 px-3 py-2">
                           <span

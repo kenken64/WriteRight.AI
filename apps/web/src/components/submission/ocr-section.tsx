@@ -109,13 +109,13 @@ export function OcrSection({ submissionId, text, imageUrls }: OcrSectionProps) {
       {active === 'Text' && !editing && <OcrTextDisplay text={displayText} />}
 
       {active === 'Text' && editing && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            className="w-full min-h-[400px] rounded-md border p-3 font-mono text-sm resize-y focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full min-h-[300px] rounded-md border p-3 font-mono text-sm resize-y focus:outline-none focus:ring-2 focus:ring-primary md:min-h-[400px]"
           />
-          <div className="prose prose-sm max-w-none overflow-y-auto min-h-[400px] rounded-md border p-3">
+          <div className="prose prose-sm max-w-none overflow-y-auto min-h-[200px] rounded-md border p-3 md:min-h-[400px]">
             <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{draft}</ReactMarkdown>
           </div>
         </div>
@@ -124,7 +124,12 @@ export function OcrSection({ submissionId, text, imageUrls }: OcrSectionProps) {
       {active === 'Original' && hasImages && (
         <div className="flex flex-col gap-4">
           {imageUrls.map((url, i) => {
-            const isPdf = new URL(url, window.location.origin).pathname.toLowerCase().endsWith('.pdf');
+            let isPdf = false;
+            try {
+              isPdf = new URL(url, window.location.origin).pathname.toLowerCase().endsWith('.pdf');
+            } catch {
+              // malformed URL — treat as image
+            }
             return isPdf ? (
               <iframe
                 key={i}
@@ -133,11 +138,13 @@ export function OcrSection({ submissionId, text, imageUrls }: OcrSectionProps) {
                 className="w-full min-h-[600px] rounded-md border"
               />
             ) : (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 key={i}
                 src={url}
                 alt={`Original handwritten page ${i + 1}`}
-                className="w-full rounded-md border object-contain"
+                className="w-full max-w-full rounded-md border object-contain"
+                loading="lazy"
               />
             );
           })}
