@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, createAdminSupabaseClient } from "@/lib/supabase/server";
 import { evaluateEssay } from "@writeright/ai/marking/engine";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -8,8 +8,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const admin = createAdminSupabaseClient();
+
   // Check recheck limits (max 2 rechecks = 3 total evaluations)
-  const { count } = await supabase
+  const { count } = await admin
     .from("evaluations")
     .select("*", { count: "exact", head: true })
     .eq("submission_id", id);
@@ -18,7 +20,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Maximum recheck limit reached (2 rechecks)" }, { status: 429 });
   }
 
-  const { data: submission } = await supabase
+  const { data: submission } = await admin
     .from("submissions")
     .select("*, assignment:assignments(*)")
     .eq("id", id)
@@ -28,7 +30,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!submission.ocr_text) return NextResponse.json({ error: "OCR not complete" }, { status: 400 });
 
   // Reset to evaluating
-  await supabase.from("submissions").update({ status: "evaluating", updated_at: new Date().toISOString() }).eq("id", id);
+  await admin.from("submissions").update({ status: "evaluating", updated_at: new Date().toISOString() }).eq("id", id);
 
   try {
     // Re-run evaluation — the AI engine uses temperature 0.2 internally,
@@ -58,18 +60,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       review_recommended: result.reviewRecommended,
     };
 
-    const { data: evalData, error } = await supabase.from("evaluations").insert(evaluation).select().single();
+    const { data: evalData, error } = await admin.from("evaluations").insert(evaluation).select().single();
 
     if (error) {
-      await supabase.from("submissions").update({ status: "evaluated", updated_at: new Date().toISOString() }).eq("id", id);
+      await admin.from("submissions").update({ status: "evaluated", updated_at: new Date().toISOString() }).eq("id", id);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    await supabase.from("submissions").update({ status: "evaluated", updated_at: new Date().toISOString() }).eq("id", id);
+    await admin.from("submissions").update({ status: "evaluated", updated_at: new Date().toISOString() }).eq("id", id);
 
     return NextResponse.json({ evaluation: evalData, attempt: (count ?? 0) + 1 }, { status: 201 });
   } catch (err: any) {
-    await supabase.from("submissions").update({ status: "evaluated", updated_at: new Date().toISOString() }).eq("id", id);
+    await admin.from("submissions").update({ status: "evaluated", updated_at: new Date().toISOString() }).eq("id", id);
     return NextResponse.json({ error: err.message ?? "Recheck failed" }, { status: 500 });
   }
 }

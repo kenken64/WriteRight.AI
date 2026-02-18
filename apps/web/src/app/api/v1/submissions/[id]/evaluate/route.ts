@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, createAdminSupabaseClient } from "@/lib/supabase/server";
 import { evaluateEssay } from "@writeright/ai/marking/engine";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -8,7 +8,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: submission } = await supabase
+  const admin = createAdminSupabaseClient();
+
+  const { data: submission } = await admin
     .from("submissions")
     .select("*, assignment:assignments(*)")
     .eq("id", id)
@@ -20,7 +22,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   // Update status to evaluating
-  await supabase.from("submissions").update({ status: "evaluating", updated_at: new Date().toISOString() }).eq("id", id);
+  await admin.from("submissions").update({ status: "evaluating", updated_at: new Date().toISOString() }).eq("id", id);
 
   try {
     const result = await evaluateEssay({
@@ -48,18 +50,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       review_recommended: result.reviewRecommended,
     };
 
-    const { data: evalData, error } = await supabase.from("evaluations").insert(evaluation).select().single();
+    const { data: evalData, error } = await admin.from("evaluations").insert(evaluation).select().single();
 
     if (error) {
-      await supabase.from("submissions").update({ status: "failed", failure_reason: error.message, updated_at: new Date().toISOString() }).eq("id", id);
+      await admin.from("submissions").update({ status: "failed", failure_reason: error.message, updated_at: new Date().toISOString() }).eq("id", id);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    await supabase.from("submissions").update({ status: "evaluated", updated_at: new Date().toISOString() }).eq("id", id);
+    await admin.from("submissions").update({ status: "evaluated", updated_at: new Date().toISOString() }).eq("id", id);
 
     return NextResponse.json({ evaluation: evalData }, { status: 201 });
   } catch (err: any) {
-    await supabase.from("submissions").update({ status: "failed", failure_reason: err.message, updated_at: new Date().toISOString() }).eq("id", id);
+    await admin.from("submissions").update({ status: "failed", failure_reason: err.message, updated_at: new Date().toISOString() }).eq("id", id);
     return NextResponse.json({ error: err.message ?? "Evaluation failed" }, { status: 500 });
   }
 }
