@@ -144,8 +144,8 @@ export function useRewrites(submissionId: string) {
 export function useRequestRewrite() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { submissionId: string; mode: 'exam_optimised' | 'clarity_optimised' }) =>
-      apiFetch<{ rewrite: RewriteResult }>(`/submissions/${data.submissionId}/rewrite`, { method: 'POST', body: JSON.stringify({ mode: data.mode }) }),
+    mutationFn: (data: { submissionId: string; mode: 'exam_optimised' | 'clarity_optimised'; targetBand?: number }) =>
+      apiFetch<{ rewrite: RewriteResult }>(`/submissions/${data.submissionId}/rewrite`, { method: 'POST', body: JSON.stringify({ mode: data.mode, targetBand: data.targetBand }) }),
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ['rewrites', variables.submissionId] });
     },

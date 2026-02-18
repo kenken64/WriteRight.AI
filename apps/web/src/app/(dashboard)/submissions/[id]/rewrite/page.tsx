@@ -28,6 +28,7 @@ function stripMarkdownFences(text: string): string {
 export default function RewritePage() {
   const params = useParams<{ id: string }>();
   const [mode, setMode] = useState<'exam_optimised' | 'clarity_optimised'>('exam_optimised');
+  const [targetBand, setTargetBand] = useState<number | undefined>(undefined);
   const [view, setView] = useState<'annotated' | 'diff'>('annotated');
   const requestRewrite = useRequestRewrite();
   const submission = useSubmission(params.id);
@@ -35,7 +36,7 @@ export default function RewritePage() {
   const existingRewrites = useRewrites(params.id);
 
   const handleGenerate = () => {
-    requestRewrite.mutate({ submissionId: params.id, mode });
+    requestRewrite.mutate({ submissionId: params.id, mode, targetBand });
   };
 
   // Show mutation result immediately, fall back to latest persisted rewrite
@@ -69,8 +70,7 @@ export default function RewritePage() {
 
       <h1 className="mt-4 text-2xl font-bold">Model Rewrite</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        ⚠️ Reference Model Answer — for learning purposes only. The rewrite is pitched one band
-        above your current level.
+        ⚠️ Reference Model Answer — for learning purposes only. Choose your target band below.
       </p>
 
       <div className="mt-6 flex gap-3">
@@ -86,6 +86,27 @@ export default function RewritePage() {
           </button>
         ))}
       </div>
+
+      {currentBand != null && currentBand < 5 && (
+        <div className="mt-4">
+          <label className="text-sm font-medium text-muted-foreground">Target Band</label>
+          <div className="mt-1.5 flex gap-2">
+            {Array.from({ length: 5 - currentBand }, (_, i) => currentBand + 1 + i).map((band) => (
+              <button
+                key={band}
+                onClick={() => setTargetBand(band === (targetBand ?? currentBand + 1) ? undefined : band)}
+                className={`rounded-md border px-3 py-1.5 text-sm font-medium ${
+                  (targetBand ?? currentBand + 1) === band
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'text-muted-foreground'
+                }`}
+              >
+                Band {band}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <button
         onClick={handleGenerate}

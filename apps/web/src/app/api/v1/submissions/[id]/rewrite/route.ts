@@ -12,6 +12,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const admin = createAdminSupabaseClient();
   const body = await req.json();
   const mode = body.mode ?? "exam_optimised";
+  const requestedTargetBand = body.targetBand ? Number(body.targetBand) : undefined;
 
   const { data: submission } = await admin
     .from("submissions")
@@ -50,6 +51,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       evaluation: evalForAI,
       essayType: submission.assignment?.essay_type ?? "continuous",
       prompt: submission.assignment?.prompt ?? "",
+      targetBand: requestedTargetBand,
     });
 
     const rewrite = {

@@ -11,10 +11,14 @@ export interface RewriteInput {
   evaluation: EvaluationResult;
   essayType: "situational" | "continuous";
   prompt: string;
+  targetBand?: number;
 }
 
 export async function rewriteEssay(input: RewriteInput): Promise<RewriteResult> {
-  const targetBand = calculateTargetBand(input.evaluation.band);
+  const currentBand = input.evaluation.band;
+  const targetBand = input.targetBand && input.targetBand > currentBand && input.targetBand <= 5
+    ? input.targetBand
+    : calculateTargetBand(currentBand);
 
   const { system, user } = getPrompt("rewrite-v1", {
     essayText: input.essayText,
