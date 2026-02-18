@@ -245,12 +245,17 @@
 
         .step-image {
             width: 100%;
-            height: 200px;
-            background-size: cover;
-            background-position: center;
             border-radius: 0.5rem;
             margin-bottom: 1rem;
             border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+
+        .step-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 0.5rem;
         }
 
         .grading-mockup {
@@ -765,7 +770,7 @@
             <div class="steps-grid">
                 <div class="step-card">
                     <div class="step-number">1</div>
-                    <div class="step-image" style="background-image: url('screenshots/04-submit-essay-upload.jpg');"></div>
+                    <div class="step-image"><img src="screenshots/04-submit-essay-upload.jpg" alt="Submit your essay — upload or paste directly"></div>
                     <h3>Submit Your Essay</h3>
                     <p>Upload your essay or paste it directly. Choose from our topic bank or submit any essay topic.</p>
                 </div>
@@ -803,7 +808,7 @@
                 </div>
                 <div class="step-card">
                     <div class="step-number">3</div>
-                    <div class="step-image" style="background-image: url('screenshots/05-achievements.jpg');"></div>
+                    <div class="step-image"><img src="screenshots/05-achievements.jpg" alt="Track your progress with 20+ achievement badges"></div>
                     <h3>Track Your Progress</h3>
                     <p>Earn achievements as you improve and see your writing skills grow over time with detailed analytics.</p>
                 </div>
