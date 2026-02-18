@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { z } from "zod";
+import { getCached, putCached } from "@/lib/tts-cache";
 
 const ttsRequestSchema = z.object({
   text: z.string().min(1).max(4096),
@@ -18,12 +19,32 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { text, voice, speed, useCase } = ttsRequestSchema.parse(body);
 
-    // Lazy-import to keep the AI package out of the initial bundle for other routes
+    const resolvedVoice = voice ?? "nova";
+    const resolvedSpeed = speed ?? 1.0;
+
+    // Check disk cache first (Railway volume)
+    const cached = await getCached(text, resolvedVoice, resolvedSpeed, useCase);
+    if (cached) {
+      return new NextResponse(new Uint8Array(cached.audio), {
+        status: 200,
+        headers: {
+          "Content-Type": cached.contentType,
+          "Content-Length": String(cached.audio.length),
+          "X-TTS-Cache": "HIT",
+          "Cache-Control": "private, max-age=86400",
+        },
+      });
+    }
+
+    // Cache miss — generate via OpenAI
     const { synthesise, synthesiseForUseCase } = await import("@writeright/ai/tts/engine");
 
     const result = useCase
       ? await synthesiseForUseCase(text, useCase, { voice, speed })
-      : await synthesise({ text, voice: voice ?? "nova", speed: speed ?? 1.0 });
+      : await synthesise({ text, voice: resolvedVoice, speed: resolvedSpeed });
+
+    // Write to disk cache (fire-and-forget)
+    putCached(text, resolvedVoice, resolvedSpeed, result.audio, useCase).catch(() => {});
 
     return new NextResponse(new Uint8Array(result.audio), {
       status: 200,
@@ -31,6 +52,7 @@ export async function POST(req: NextRequest) {
         "Content-Type": result.contentType,
         "Content-Length": String(result.audio.length),
         "X-Duration-Estimate-Ms": String(result.durationEstimateMs),
+        "X-TTS-Cache": "MISS",
         "Cache-Control": "private, max-age=3600",
       },
     });
