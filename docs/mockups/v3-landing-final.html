@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WriteRight SG</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #F8F7F4;
+    --bg-white: #FFFFFF;
+    --bg-dark: #0F172A;
+    --text-primary: #0F172A;
+    --text-secondary: #64748B;
+    --text-muted: #94A3B8;
+    --accent-blue: #2563EB;
+    --accent-blue-hover: #1D4ED8;
+    --accent-green: #16A34A;
+    --border: #E2E8F0;
+    --highlight-bg: #EFF6FF;
+    --serif: 'Instrument Serif', Georgia, serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--sans);
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+  }
+
+  /* ─── SVG Icon System (inline, no emoji) ─── */
+  .icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+  .icon svg { width: 100%; height: 100%; }
+  .icon-check svg { stroke: var(--accent-green); }
+  .icon-sm { width: 16px; height: 16px; }
+  .icon-lg { width: 24px; height: 24px; }
+
+  /* ─── NAVBAR (floating pill) ─── */
+  .nav-wrapper {
+    position: sticky;
+    top: 16px;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    padding: 0 1.5rem;
+    pointer-events: none;
+  }
+  .nav {
+    pointer-events: all;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 900px;
+    width: 100%;
+    padding: 10px 10px 10px 24px;
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(16px) saturate(1.6);
+    -webkit-backdrop-filter: blur(16px) saturate(1.6);
+    border-radius: 999px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.03);
+  }
+  .nav-logo {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text-primary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    letter-spacing: -0.01em;
+  }
+  .nav-logo .mark {
+    width: 28px;
+    height: 28px;
+    background: var(--accent-blue);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .nav-logo .mark svg { width: 16px; height: 16px; }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .nav-link {
+    font-size: 0.88rem;
+    font-weight: 450;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    transition: color 0.2s, background 0.2s;
+  }
+  .nav-link:hover { color: var(--text-primary); background: rgba(0,0,0,0.04); }
+
+  /* ─── BUTTONS ─── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    font-family: var(--sans);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-pill {
+    border-radius: 999px;
+    padding: 0.7rem 1.5rem;
+    font-size: 0.88rem;
+  }
+  .btn-pill-lg {
+    border-radius: 999px;
+    padding: 0.85rem 2rem;
+    font-size: 0.95rem;
+  }
+  .btn-primary {
+    background: var(--accent-blue);
+    color: #fff;
+  }
+  .btn-primary:hover {
+    background: var(--accent-blue-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(37,99,235,0.25);
+  }
+  .btn-outline {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1.5px solid var(--text-primary);
+  }
+  .btn-outline:hover {
+    background: var(--text-primary);
+    color: #fff;
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 450;
+  }
+  .btn-ghost:hover { color: var(--text-primary); }
+  .btn-inverted {
+    background: #fff;
+    color: var(--accent-blue);
+  }
+  .btn-inverted:hover {
+    background: var(--highlight-bg);
+    transform: translateY(-1px);
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    padding: 7rem 2rem 4rem;
+    text-align: center;
+    background: var(--bg-primary);
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.35rem 1rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    background: var(--bg-white);
+  }
+  .hero-badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-green);
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .hero h1 .blue { color: var(--accent-blue); }
+  .hero-sub {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    max-width: 480px;
+    margin: 1.5rem auto 0;
+    line-height: 1.65;
+    font-weight: 400;
+  }
+  .hero-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-top: 2.5rem;
+  }
+  .hero-trust {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.75rem;
+    justify-content: center;
+    margin-top: 2.5rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  .hero-trust span {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  /* ─── SECTIONS ─── */
+  .section {
+    padding: 6rem 2rem;
+  }
+  .section-warm { background: var(--bg-primary); }
+  .section-white { background: var(--bg-white); }
+  .section-dark { background: var(--bg-dark); color: #fff; }
+  .section-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .section-header {
+    text-align: center;
+    margin-bottom: 3.5rem;
+  }
+  .section-header h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+  .section-header p {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    margin-top: 0.6rem;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .section-dark .section-header p { color: rgba(255,255,255,0.6); }
+
+  /* ─── STATS BAR ─── */
+  .stats-bar {
+    max-width: 860px;
+    margin: -2rem auto 0;
+    position: relative;
+    z-index: 2;
+    padding: 0 2rem;
+  }
+  .stats-card {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 2rem 1.5rem;
+    gap: 1rem;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: var(--serif);
+    font-size: 2.75rem;
+    font-weight: 400;
+    color: var(--text-primary);
+    line-height: 1.1;
+  }
+  .stat-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-top: 0.35rem;
+  }
+
+  /* ─── HOW IT WORKS ─── */
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+  .step-card {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.25rem 1.75rem;
+    transition: box-shadow 0.3s;
+  }
+  .step-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+  .step-number {
+    font-family: var(--serif);
+    font-size: 3rem;
+    color: #CBD5E1;
+    line-height: 1;
+    margin-bottom: 1.25rem;
+  }
+  .step-card h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  .step-card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* ─── DEMO SECTION ─── */
+  .demo-wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .demo-card {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+  }
+  .demo-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    background: #FAFAF8;
+  }
+  .demo-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .demo-dot:nth-child(1) { background: #FCA5A5; }
+  .demo-dot:nth-child(2) { background: #FDE68A; }
+  .demo-dot:nth-child(3) { background: #86EFAC; }
+  .demo-toolbar-title { margin-left: 0.5rem; font-size: 0.78rem; color: var(--text-muted); font-weight: 500; }
+  .demo-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .demo-left {
+    padding: 2rem;
+    border-right: 1px solid var(--border);
+  }
+  .demo-right {
+    padding: 2rem;
+    background: #FAFAF8;
+  }
+  .demo-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .demo-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.85;
+  }
+  .demo-text .mark-amber { background: rgba(251,191,36,0.2); padding: 0.05rem 0.15rem; border-radius: 2px; }
+  .demo-text .mark-green { background: rgba(22,163,74,0.15); padding: 0.05rem 0.15rem; border-radius: 2px; }
+  .demo-attribution {
+    margin-top: 1.25rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* Score rings */
+  .score-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+  .score-item { flex: 1; text-align: center; }
+  .score-ring {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.4rem;
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+  .score-ring.green { border: 2.5px solid var(--accent-green); color: var(--accent-green); background: rgba(22,163,74,0.06); }
+  .score-ring.blue { border: 2.5px solid var(--accent-blue); color: var(--accent-blue); background: rgba(37,99,235,0.06); }
+  .score-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .fb-item {
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    line-height: 1.55;
+  }
+  .fb-item.good { background: rgba(22,163,74,0.08); }
+  .fb-item.fix { background: rgba(251,191,36,0.1); }
+  .fb-item strong { display: block; font-weight: 600; margin-bottom: 0.15rem; font-size: 0.8rem; }
+  .fb-item.good strong { color: var(--accent-green); }
+  .fb-item.fix strong { color: #B45309; }
+  .fb-item p { color: var(--text-secondary); }
+
+  .demo-footer {
+    text-align: center;
+    padding: 1rem 2rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+  }
+  .demo-footer a { color: var(--accent-blue); font-weight: 600; text-decoration: none; }
+
+  /* ─── AUDIENCE CARDS ─── */
+  .audience-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .audience-card {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+  }
+  .audience-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    font-size: 1.5rem;
+  }
+  .audience-icon.parent { background: var(--highlight-bg); }
+  .audience-icon.student { background: rgba(22,163,74,0.08); }
+  .audience-card h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.25rem; }
+  .audience-card .tagline { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.25rem; font-family: var(--serif); font-style: italic; }
+  .audience-card ul { list-style: none; }
+  .audience-card li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.45rem 0;
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  /* ─── BENEFITS (2-col per guide §7) ─── */
+  .benefits-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .benefit-card {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+  }
+  .benefit-card .benefit-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--highlight-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+  .benefit-card h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.4rem; }
+  .benefit-card p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; }
+
+  /* ─── TESTIMONIALS ─── */
+  .testimonials-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .testimonial-card {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+  }
+  .testimonial-card blockquote {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    margin-bottom: 1.25rem;
+  }
+  .testimonial-card .attribution {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-family: var(--sans);
+    font-style: normal;
+  }
+  .testimonial-note {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* ─── PRICING ─── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .price-card {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+  }
+  .price-card.featured {
+    border: 1.5px solid rgba(37,99,235,0.4);
+    box-shadow: 0 4px 20px rgba(37,99,235,0.06);
+  }
+  .price-card .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent-blue);
+    background: var(--highlight-bg);
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    margin-bottom: 0.75rem;
+  }
+  .price-card h3 { font-family: var(--serif); font-size: 1.25rem; margin-bottom: 0.25rem; }
+  .price-amount {
+    font-family: var(--serif);
+    font-size: 3rem;
+    font-weight: 400;
+    color: var(--text-primary);
+    line-height: 1.1;
+    margin: 0.5rem 0 0.25rem;
+  }
+  .price-amount .period { font-family: var(--sans); font-size: 0.9rem; color: var(--text-muted); font-weight: 400; }
+  .price-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+  .price-features { list-style: none; margin-bottom: 2rem; }
+  .price-features li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+  }
+  .price-context {
+    text-align: center;
+    max-width: 720px;
+    margin: 2rem auto 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+
+  /* ─── FAQ ─── */
+  .faq-list { max-width: 680px; margin: 0 auto; }
+  .faq-item { border-bottom: 1px solid var(--border); }
+  .faq-q {
+    padding: 1.25rem 0;
+    font-size: 1rem;
+    font-weight: 500;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+  }
+  .faq-q::after { content: '+'; font-size: 1.5rem; font-weight: 300; color: var(--text-muted); }
+  .faq-a {
+    padding: 0 0 1.25rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    max-width: 600px;
+  }
+
+  /* ─── DARK CTA ─── */
+  .dark-cta {
+    background: var(--bg-dark);
+    padding: 6rem 2rem;
+    text-align: center;
+    color: #fff;
+  }
+  .dark-cta h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 400;
+  }
+  .dark-cta p {
+    color: rgba(255,255,255,0.6);
+    font-size: 1.05rem;
+    margin-top: 0.75rem;
+    max-width: 460px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .dark-cta .cta-row {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-top: 2.5rem;
+    align-items: center;
+  }
+  .dark-cta .text-link {
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .dark-cta .text-link:hover { color: #fff; }
+
+  /* ─── FOOTER ─── */
+  .footer {
+    background: var(--bg-dark);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 2rem;
+    text-align: center;
+  }
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.75rem;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+  }
+  .footer-links a { font-size: 0.82rem; color: rgba(255,255,255,0.4); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: rgba(255,255,255,0.7); }
+  .footer-copy { font-size: 0.78rem; color: rgba(255,255,255,0.3); }
+
+  /* ─── MOBILE ─── */
+  @media (max-width: 768px) {
+    .nav { padding: 8px 8px 8px 16px; border-radius: 16px; }
+    .nav-link { display: none; }
+    .hero { padding: 5rem 1.25rem 3rem; }
+    .hero h1 { font-size: 2.25rem; }
+    .stats-card { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+    .steps-grid { grid-template-columns: 1fr; }
+    .demo-body { grid-template-columns: 1fr; }
+    .demo-left { border-right: none; border-bottom: 1px solid var(--border); }
+    .audience-grid { grid-template-columns: 1fr; }
+    .benefits-grid { grid-template-columns: 1fr; }
+    .testimonials-grid { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .section { padding: 4rem 1.25rem; }
+    .score-row { gap: 0.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ NAVBAR ═══ -->
+<div class="nav-wrapper">
+  <nav class="nav">
+    <a href="#" class="nav-logo">
+      <span class="mark">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M3 12l2-8h1.5l1 4.5L8.5 4H10l2 8h-1.5L9.2 7.5 8 12H6.8L5.6 7.5 4.5 12H3z" fill="#fff"/></svg>
+      </span>
+      WriteRight SG
+    </a>
+    <div class="nav-right">
+      <a href="#how" class="nav-link">How It Works</a>
+      <a href="#pricing" class="nav-link">Pricing</a>
+      <a href="#faq" class="nav-link">FAQ</a>
+      <a href="#" class="btn btn-ghost">Log in</a>
+      <a href="#" class="btn btn-primary btn-pill">Start Free</a>
+    </div>
+  </nav>
+</div>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="dot"></span>
+    MOE 1184 Aligned
+  </div>
+
+  <h1>
+    AI Essay Feedback for<br>
+    <span class="blue">Singapore Students</span>
+  </h1>
+
+  <p class="hero-sub">
+    Submit an essay. Get a score, detailed feedback, and a model rewrite — in under two minutes.
+  </p>
+
+  <div class="hero-ctas">
+    <a href="#" class="btn btn-primary btn-pill-lg">Try Free — 3 Essays/Month</a>
+    <a href="#how" class="btn btn-outline btn-pill-lg">See How It Works →</a>
+  </div>
+
+  <div class="hero-trust">
+    <span>
+      <span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span>
+      No credit card
+    </span>
+    <span>
+      <span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span>
+      Instant feedback
+    </span>
+    <span>
+      <span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span>
+      Cancel anytime
+    </span>
+  </div>
+</section>
+
+<!-- ═══ STATS BAR ═══ -->
+<div class="stats-bar">
+  <div class="stats-card">
+    <div class="stat">
+      <div class="stat-num">70%+</div>
+      <div class="stat-label">Teacher Agreement</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">&lt;5 min</div>
+      <div class="stat-label">Feedback Time</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">1,184</div>
+      <div class="stat-label">Topics Covered</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">30+</div>
+      <div class="stat-label">Achievement Milestones</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="section section-white" id="how">
+  <div class="section-inner">
+    <div class="section-header">
+      <h2>Three steps to better writing</h2>
+      <p>From blank page to scored essay — every time.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-number">01</div>
+        <h3>Write or Upload</h3>
+        <p>Type your essay in our editor, paste text, or snap a photo of handwritten work. Our OCR handles the rest.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">02</div>
+        <h3>Get Scored</h3>
+        <p>AI scores on Content and Language using MOE 1184 criteria. Every comment references your actual paragraphs.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">03</div>
+        <h3>See How to Improve</h3>
+        <p>A model rewrite shows what "better" looks like — side by side — so you learn from every essay you write.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ DEMO (paper feel) ═══ -->
+<section class="section section-warm">
+  <div class="section-inner">
+    <div class="section-header">
+      <h2>See it in action</h2>
+      <p>Real AI feedback on a real student essay.</p>
+    </div>
+    <div class="demo-wrapper">
+      <div class="demo-card">
+        <div class="demo-toolbar">
+          <span class="demo-dot"></span>
+          <span class="demo-dot"></span>
+          <span class="demo-dot"></span>
+          <span class="demo-toolbar-title">WriteRight — Essay Feedback</span>
+        </div>
+        <div class="demo-body">
+          <div class="demo-left">
+            <div class="demo-label">
+              <span class="icon icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 13l2-2 6-6 2 2-6 6-2 2v-2z"/><path d="M9.5 4.5l2 2"/></svg></span>
+              Student Essay
+            </div>
+            <div class="demo-text">
+              <p style="margin-bottom:0.75rem;">Good morning Mr Chew, teachers and fellow schoolmates.</p>
+              <p style="margin-bottom:0.75rem;">Imagine this: every time you <span class="mark-amber">switch on a light</span>, you are also switching on pollution. Every time your room brightens, the air outside darkens.</p>
+              <p style="margin-bottom:0.75rem;">Behind their warm glow lies a costly truth: traditional light bulbs are <span class="mark-green">highly inefficient, wasting huge amounts of energy</span>. The more electricity we use, the more fossil fuels will be burned…</p>
+            </div>
+            <div class="demo-attribution">— Huang Tuoxuan, Sec 3, Nan Hua High School</div>
+          </div>
+          <div class="demo-right">
+            <div class="demo-label">
+              <span class="icon icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 13V3h12v10H2z"/><path d="M5 7h6M5 10h4"/></svg></span>
+              AI Feedback
+            </div>
+            <div class="score-row">
+              <div class="score-item">
+                <div class="score-ring green">9/10</div>
+                <div class="score-label">Content</div>
+              </div>
+              <div class="score-item">
+                <div class="score-ring green">16/20</div>
+                <div class="score-label">Language</div>
+              </div>
+              <div class="score-item">
+                <div class="score-ring blue">25/30</div>
+                <div class="score-label">Total</div>
+              </div>
+            </div>
+            <div class="fb-item good">
+              <strong>Strength</strong>
+              <p>Powerful rhetorical questions build persuasive momentum throughout the speech.</p>
+            </div>
+            <div class="fb-item fix">
+              <strong>To improve</strong>
+              <p>"saves Earth, not destroy it" — parallel structure needs fixing: "not <em>destroys</em> it".</p>
+            </div>
+          </div>
+        </div>
+        <div class="demo-footer">
+          This is real AI feedback from a real student essay. <a href="#">Try it with your own →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ AUDIENCE ═══ -->
+<section class="section section-white">
+  <div class="section-inner">
+    <div class="section-header">
+      <h2>Built for your family</h2>
+      <p>Different roles, one shared goal — better writing.</p>
+    </div>
+    <div class="audience-grid">
+      <div class="audience-card">
+        <div class="audience-icon parent">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <h3>For Parents</h3>
+        <div class="tagline">See your child grow — without hovering</div>
+        <ul>
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> Track scores and progress at a glance</li>
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> Set assignments in 30 seconds</li>
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> Costs less than one tuition session per month</li>
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> Motivate with family rewards tied to achievements</li>
+        </ul>
+      </div>
+      <div class="audience-card">
+        <div class="audience-icon student">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/></svg>
+        </div>
+        <h3>For Students</h3>
+        <div class="tagline">Know exactly what to fix — and how</div>
+        <ul>
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> Feedback in 2 minutes, not 2 weeks</li>
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> Model rewrite shows what "good" looks like</li>
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> Earn achievements and build your streak</li>
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> AI coach helps while you write</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FEATURES (2-col per guide §7) ═══ -->
+<section class="section section-warm">
+  <div class="section-inner">
+    <div class="section-header">
+      <h2>Everything you need to write better</h2>
+      <p>Built specifically for Singapore English essays.</p>
+    </div>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <h3>Built-in essay editor</h3>
+        <p>Write with real-time AI coaching, grammar highlights, and live scoring as you type.</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        </div>
+        <h3>OCR for handwriting</h3>
+        <p>Snap a photo of handwritten essays. AI reads, transcribes, and grades them.</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+        </div>
+        <h3>MOE-aligned rubrics</h3>
+        <p>Scored on Task Fulfilment (10) + Language (20) = 30 marks. The same scheme your school uses.</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M14 14l7 7M3 4l7 7"/></svg>
+        </div>
+        <h3>Model rewrites</h3>
+        <p>See how to improve with side-by-side comparisons. Learn from every essay, not just score it.</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/><path d="M12 3v12"/><path d="M5 21h14"/></svg>
+        </div>
+        <h3>Progress analytics</h3>
+        <p>Score trends, error patterns, and streak tracking. Parents and students see real improvement.</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+        </div>
+        <h3>Achievements and rewards</h3>
+        <p>Earn badges, build wishlists, and unlock family rewards. Writing practice becomes something to look forward to.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TESTIMONIALS ═══ -->
+<section class="section section-white">
+  <div class="section-inner">
+    <div class="section-header">
+      <h2>What families are saying</h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <blockquote>"WriteRight showed me exactly where I lost marks. I went from Band 2 to Band 4 in six weeks."</blockquote>
+        <div class="attribution">— Jia Yi, Sec 3 student</div>
+      </div>
+      <div class="testimonial-card">
+        <blockquote>"As a working parent, I love being able to track my daughter's progress without hovering. The feedback is specific — not just 'try harder'."</blockquote>
+        <div class="attribution">— Parent of Sec 4 student</div>
+      </div>
+    </div>
+    <div class="testimonial-note">Early user feedback. More stories coming soon.</div>
+  </div>
+</section>
+
+<!-- ═══ PRICING ═══ -->
+<section class="section section-warm" id="pricing">
+  <div class="section-inner">
+    <div class="section-header">
+      <h2>Simple, fair pricing</h2>
+      <p>Start free. Upgrade when you see results.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <h3>Free</h3>
+        <div class="price-amount">$0</div>
+        <div class="price-desc">Try it out, no commitment</div>
+        <ul class="price-features">
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> 3 essays per month</li>
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> Full AI scoring and feedback</li>
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> Model rewrite (view only)</li>
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> Basic progress tracking</li>
+        </ul>
+        <a href="#" class="btn btn-outline btn-pill" style="width:100%;">Start Free</a>
+      </div>
+      <div class="price-card featured">
+        <div class="badge">Most Popular</div>
+        <h3>WriteRight Plus</h3>
+        <div class="price-amount">$14.90 <span class="period">/month</span></div>
+        <div class="price-desc">Everything for serious improvement</div>
+        <ul class="price-features">
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> <strong>Unlimited</strong> submissions</li>
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> Full rewrite with copy and export</li>
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> Unlimited topic generation</li>
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> Full analytics and trends</li>
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> Priority feedback under 2 min</li>
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> Up to 3 student profiles</li>
+          <li><span class="icon icon-check icon-sm"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-6"/></svg></span> Family rewards system</li>
+        </ul>
+        <a href="#" class="btn btn-primary btn-pill" style="width:100%;">Start 7-Day Free Trial</a>
+      </div>
+    </div>
+    <div class="price-context">
+      $14.90/month — less than the cost of one tuition session ($60–120/hr).
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section class="section section-white" id="faq">
+  <div class="section-inner">
+    <div class="section-header">
+      <h2>Questions</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q">How does the AI score essays?</div>
+        <div class="faq-a">WriteRight uses GPT-4o aligned to MOE 1184. Essays are scored on Task Fulfilment (10 marks) and Language (20 marks). Feedback references your actual paragraphs with specific suggestions.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Is it really aligned to MOE standards?</div>
+        <div class="faq-a">Yes. Our rubric follows MOE 1184 criteria for Situational and Continuous Writing — Content, Language, Organisation, and Tone. The same dimensions used in O-Level English.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">What levels does it support?</div>
+        <div class="faq-a">Sec 1 through Sec 5 (O-Level track). JC GP support is coming soon.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Is my child's data safe?</div>
+        <div class="faq-a">All data is encrypted and never shared. Essays are processed for scoring only — not used to train AI models.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Can my child upload handwritten work?</div>
+        <div class="faq-a">Yes. Take a photo, our OCR transcribes it, and you can review before submitting for scoring.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">How is this different from ChatGPT?</div>
+        <div class="faq-a">ChatGPT gives generic feedback. WriteRight scores against MOE rubrics with band scores, tracks progress over time, provides structured model rewrites, and has parent dashboards with student gamification. Purpose-built for SG English essays.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Can I cancel anytime?</div>
+        <div class="faq-a">Yes. One click in settings. No lock-in, no penalty. Free tier continues after cancellation.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ DARK CTA ═══ -->
+<section class="dark-cta">
+  <h2>Ready to improve your essays?</h2>
+  <p>Join students across Singapore scoring higher with WriteRight.</p>
+  <div class="cta-row">
+    <a href="#" class="btn btn-inverted btn-pill-lg">Start Free — No Card Needed</a>
+    <a href="#pricing" class="text-link">See Pricing →</a>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer">
+  <div class="footer-links">
+    <a href="#">About</a>
+    <a href="#faq">FAQ</a>
+    <a href="#">Terms of Service</a>
+    <a href="#">Privacy Policy</a>
+    <a href="#">Contact</a>
+  </div>
+  <div class="footer-copy">© 2026 WriteRight SG. Built for Singapore students.</div>
+</footer>
+
+</body>
+</html>
