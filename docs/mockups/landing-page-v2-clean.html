@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WriteRight SG - AI-Powered Essay Feedback</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
+            background-color: #ffffff;
+        }
+
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e5e7eb;
+            z-index: 100;
+            padding: 1rem 0;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn-login {
+            color: #2563eb;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s;
+        }
+
+        .btn-login:hover {
+            background-color: #f3f4f6;
+        }
+
+        .btn-cta {
+            background: linear-gradient(135deg, #2563eb 0%, #4338ca 100%);
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section {
+            padding: 4rem 0;
+        }
+
+        .hero {
+            padding: 6rem 0;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-content h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero-content p {
+            font-size: 1.25rem;
+            color: #4b5563;
+            margin-bottom: 2rem;
+        }
+
+        .product-mockup {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid #e5e7eb;
+        }
+
+        .mockup-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .mockup-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background-color: #ef4444; }
+        .dot-yellow { background-color: #eab308; }
+        .dot-green { background-color: #22c55e; }
+
+        .mockup-title {
+            font-weight: 600;
+            color: #374151;
+            margin-left: auto;
+        }
+
+        .essay-editor {
+            background: #f9fafb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #2563eb;
+        }
+
+        .essay-text {
+            font-family: 'Georgia', serif;
+            font-size: 0.9rem;
+            color: #374151;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .ai-feedback {
+            background: linear-gradient(135deg, #2563eb 0%, #4338ca 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .feedback-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .stats-bar {
+            background: #1f2937;
+            color: white;
+            padding: 2rem 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .stat-item h3 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #2563eb;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-item p {
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+
+        .how-it-works {
+            background: #f8fafc;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 3rem;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3rem;
+        }
+
+        .step-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+
+        .step-number {
+            width: 3rem;
+            height: 3rem;
+            background: linear-gradient(135deg, #2563eb 0%, #4338ca 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .step-image {
+            width: 100%;
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .grading-mockup {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 2px solid #e5e7eb;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .grading-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #d1d5db;
+        }
+
+        .overall-band {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #059669;
+            background: #d1fae5;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            display: inline-block;
+        }
+
+        .dimension-scores {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .dimension {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .dimension-name {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.25rem;
+        }
+
+        .dimension-score {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        .family-motivation {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+
+        .motivation-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .motivation-quote {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #92400e;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        .motivation-subtitle {
+            font-size: 1.25rem;
+            color: #b45309;
+        }
+
+        .motivation-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+        }
+
+        .side-mockup {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+        }
+
+        .side-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .wishlist-item {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .wishlist-content {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .promise-score {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .score-number {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+
+        .testimonials {
+            background: #f8fafc;
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .testimonial-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+        }
+
+        .testimonial-quote {
+            font-style: italic;
+            color: #4b5563;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .testimonial-avatar {
+            width: 3rem;
+            height: 3rem;
+            background: linear-gradient(135deg, #2563eb 0%, #4338ca 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+        }
+
+        .outcome-badge {
+            background: #dcfce7;
+            color: #166534;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            position: relative;
+        }
+
+        .pricing-card.featured {
+            border: 2px solid #2563eb;
+        }
+
+        .pricing-badge {
+            background: linear-gradient(135deg, #2563eb 0%, #4338ca 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            position: absolute;
+            top: -0.75rem;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .plan-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #2563eb;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-period {
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+
+        .plan-features {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .plan-features li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .plan-features li:before {
+            content: '✓';
+            color: #10b981;
+            font-weight: 700;
+        }
+
+        .trial-note {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .faq-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+        }
+
+        .faq-question {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .faq-answer {
+            color: #4b5563;
+            line-height: 1.6;
+        }
+
+        .footer {
+            background: #1f2937;
+            color: white;
+            padding: 3rem 0 2rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: #d1d5db;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: #2563eb;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 2rem;
+            text-align: center;
+            color: #9ca3af;
+        }
+
+        .bottom-cta {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+
+        .bottom-cta h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+        }
+
+        .bottom-cta p {
+            font-size: 1.25rem;
+            color: #d1d5db;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero-grid,
+            .motivation-grid,
+            .steps-grid,
+            .features-grid,
+            .testimonial-grid,
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+
+            .nav-container {
+                padding: 0 1rem;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sticky Navigation -->
+    <nav class="sticky-nav">
+        <div class="nav-container">
+            <div class="logo">WriteRight SG</div>
+            <div class="nav-buttons">
+                <a href="#" class="btn-login">Log in</a>
+                <a href="#" class="btn-cta">Try Free — 3 Essays/Month</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-grid">
+                <div class="hero-content">
+                    <h1>Transform Your Essays with AI-Powered Feedback</h1>
+                    <p>Get instant, detailed feedback on your essays that helps you improve faster than traditional tuition. Aligned with MOE standards.</p>
+                    <a href="#" class="btn-cta">Start Your Free Trial</a>
+                </div>
+                <div class="product-mockup">
+                    <div class="mockup-header">
+                        <div class="mockup-dot dot-red"></div>
+                        <div class="mockup-dot dot-yellow"></div>
+                        <div class="mockup-dot dot-green"></div>
+                        <div class="mockup-title">AI Essay Feedback</div>
+                    </div>
+                    <div class="essay-editor">
+                        <div class="essay-text">
+                            <strong>Topic:</strong> Climate change is a pressing global issue that requires immediate action...<br><br>
+                            Climate change represents one of the most significant challenges facing humanity today. The evidence for global warming is overwhelming, with rising temperatures, melting ice caps, and increasingly frequent extreme weather events...
+                        </div>
+                    </div>
+                    <div class="ai-feedback">
+                        <div class="feedback-header">
+                            <span>🤖</span>
+                            <span>AI Feedback</span>
+                        </div>
+                        <p><strong>Overall Band:</strong> 3.5/6 - Good foundation with room for improvement</p>
+                        <p><strong>Strengths:</strong> Clear thesis statement, good use of examples</p>
+                        <p><strong>Areas to improve:</strong> Add more sophisticated vocabulary, strengthen conclusion</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Bar -->
+    <section class="stats-bar">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h3>70%+</h3>
+                    <p>Students improve within 5 essays</p>
+                </div>
+                <div class="stat-item">
+                    <h3>&lt;5 min</h3>
+                    <p>Get feedback instantly</p>
+                </div>
+                <div class="stat-item">
+                    <h3>1,184</h3>
+                    <p>Essays graded this week</p>
+                </div>
+                <div class="stat-item">
+                    <h3>30+</h3>
+                    <p>Schools using WriteRight</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="section how-it-works">
+        <div class="container">
+            <h2 class="section-title">How It Works</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-image" style="background-image: url('screenshots/04-submit-essay-upload.jpg');"></div>
+                    <h3>Submit Your Essay</h3>
+                    <p>Upload your essay or paste it directly. Choose from our topic bank or submit any essay topic.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="grading-mockup">
+                        <div class="grading-header">
+                            <h4>Your Results</h4>
+                            <div class="overall-band">Band 4.5</div>
+                        </div>
+                        <div class="dimension-scores">
+                            <div class="dimension">
+                                <div class="dimension-name">Content</div>
+                                <div class="dimension-score">4/6</div>
+                            </div>
+                            <div class="dimension">
+                                <div class="dimension-name">Language</div>
+                                <div class="dimension-score">5/6</div>
+                            </div>
+                            <div class="dimension">
+                                <div class="dimension-name">Organisation</div>
+                                <div class="dimension-score">4/6</div>
+                            </div>
+                            <div class="dimension">
+                                <div class="dimension-name">Task Achievement</div>
+                                <div class="dimension-score">5/6</div>
+                            </div>
+                        </div>
+                        <div style="background: #fef3c7; padding: 1rem; border-radius: 0.5rem; font-size: 0.9rem; color: #92400e;">
+                            <strong>Key feedback:</strong> Excellent vocabulary usage! Consider adding more complex sentence structures in paragraph 2.
+                        </div>
+                    </div>
+                    <h3>Get AI-Powered Feedback</h3>
+                    <p>Receive detailed band scores and specific suggestions to improve your writing in under 5 minutes.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-image" style="background-image: url('screenshots/05-achievements.jpg');"></div>
+                    <h3>Track Your Progress</h3>
+                    <p>Earn achievements as you improve and see your writing skills grow over time with detailed analytics.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Family Motivation -->
+    <section class="section family-motivation">
+        <div class="container">
+            <div class="motivation-header">
+                <div class="motivation-quote">"My daughter asked to do MORE essays."</div>
+                <div class="motivation-subtitle">— Parent testimonial after using family rewards</div>
+            </div>
+            <div class="motivation-grid">
+                <div class="side-mockup">
+                    <div class="side-title">
+                        <span>👧</span>
+                        Student Wishlist
+                    </div>
+                    <div class="wishlist-item">
+                        <div class="wishlist-content">
+                            <span>🎬</span>
+                            <div>
+                                <div style="font-weight: 600;">Movie Night</div>
+                                <div style="font-size: 0.8rem; color: #6b7280;">Complete 5 essays</div>
+                            </div>
+                        </div>
+                        <div class="status-badge badge-pending">3/5 Complete</div>
+                    </div>
+                    <div class="wishlist-item">
+                        <div class="wishlist-content">
+                            <span>🧋</span>
+                            <div>
+                                <div style="font-weight: 600;">Bubble Tea Trip</div>
+                                <div style="font-size: 0.8rem; color: #6b7280;">Hit Band 4</div>
+                            </div>
+                        </div>
+                        <div style="background: #dcfce7; color: #166534; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; font-size: 0.8rem;">
+                            Claimable! 🎉
+                        </div>
+                    </div>
+                    <div class="wishlist-item">
+                        <div class="wishlist-content">
+                            <span>🎮</span>
+                            <div>
+                                <div style="font-weight: 600;">Extra Gaming Time</div>
+                                <div style="font-size: 0.8rem; color: #6b7280;">30 min bonus</div>
+                            </div>
+                        </div>
+                        <div style="background: #f3f4f6; color: #4b5563; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; font-size: 0.8rem;">
+                            Waiting...
+                        </div>
+                    </div>
+                </div>
+                <div class="side-mockup">
+                    <div class="side-title">
+                        <span>👨‍👩‍👧</span>
+                        Parent Dashboard
+                    </div>
+                    <div class="promise-score">
+                        <div class="score-number">85%</div>
+                        <div>Promise Score</div>
+                        <div style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.9;">Great job keeping promises!</div>
+                    </div>
+                    <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem;">
+                        <div style="font-weight: 600; color: #92400e; margin-bottom: 0.5rem;">Pending Approval</div>
+                        <div style="color: #92400e; font-size: 0.9rem;">Sarah wants "Extra Gaming Time" - link to writing achievement?</div>
+                        <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                            <button style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.8rem;">Approve</button>
+                            <button style="background: #6b7280; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.8rem;">Decline</button>
+                        </div>
+                    </div>
+                    <button style="background: #2563eb; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600; width: 100%;">
+                        + Add Surprise Reward
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Everything You Need to Improve</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3 class="feature-title">AI-Powered Feedback</h3>
+                    <p>Get detailed, instant feedback on content, language, organization, and task achievement.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Progress Tracking</h3>
+                    <p>Monitor your improvement over time with detailed analytics and performance insights.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📚</div>
+                    <h3 class="feature-title">Topic Bank</h3>
+                    <p>Practice with a comprehensive library of essay topics aligned with MOE standards.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏆</div>
+                    <h3 class="feature-title">Achievements</h3>
+                    <p>Unlock badges and celebrate milestones as you reach new writing competency levels.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3 class="feature-title">Family Rewards</h3>
+                    <p>Parents can create custom rewards linked to writing goals to motivate consistent practice.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3 class="feature-title">Mobile Friendly</h3>
+                    <p>Submit essays and receive feedback from any device, anywhere, anytime.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="section testimonials">
+        <div class="container">
+            <h2 class="section-title">Real Results from Real Students</h2>
+            <div class="testimonial-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-quote">
+                        "WriteRight helped me understand exactly what I was doing wrong in my essays. The feedback is so specific and helpful."
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">S</div>
+                        <div>
+                            <div style="font-weight: 600;">Sarah, Sec 4</div>
+                            <div style="color: #6b7280; font-size: 0.9rem;">CHIJ St. Nicholas Girls' School</div>
+                        </div>
+                        <div class="outcome-badge">Band 2 → Band 4</div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-quote">
+                        "My son used to hate writing essays. Now he's asking for extra practice! The family rewards system works incredibly well."
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">L</div>
+                        <div>
+                            <div style="font-weight: 600;">Mrs. Lim</div>
+                            <div style="color: #6b7280; font-size: 0.9rem;">Parent</div>
+                        </div>
+                        <div class="outcome-badge">3 months of use</div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-quote">
+                        "The instant feedback means I can practice more efficiently. I improved by a full band score in just 2 months."
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">M</div>
+                        <div>
+                            <div style="font-weight: 600;">Marcus, Sec 3</div>
+                            <div style="color: #6b7280; font-size: 0.9rem;">Anderson Secondary School</div>
+                        </div>
+                        <div class="outcome-badge">Band 3 → Band 4</div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-quote">
+                        "Finally, an affordable alternative to expensive tuition that actually works. My daughter's confidence in writing has grown tremendously."
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">T</div>
+                        <div>
+                            <div style="font-weight: 600;">Mr. Tan</div>
+                            <div style="color: #6b7280; font-size: 0.9rem;">Parent</div>
+                        </div>
+                        <div class="outcome-badge">6 months of use</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Simple, Transparent Pricing</h2>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="plan-name">Free Plan</div>
+                    <div class="plan-price">$0</div>
+                    <div class="plan-period">per month</div>
+                    <ul class="plan-features">
+                        <li>3 essay submissions per month</li>
+                        <li>Basic AI feedback</li>
+                        <li>Progress tracking</li>
+                        <li>Topic bank access</li>
+                        <li>Achievement badges</li>
+                    </ul>
+                    <a href="#" class="btn-cta" style="display: block; text-align: center;">Get Started Free</a>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="pricing-badge">Most Popular</div>
+                    <div class="plan-name">Plus Plan</div>
+                    <div class="plan-price">$19</div>
+                    <div class="plan-period">per month</div>
+                    <ul class="plan-features">
+                        <li>Unlimited essay submissions</li>
+                        <li>Advanced AI feedback</li>
+                        <li>Detailed analytics</li>
+                        <li>Family rewards system</li>
+                        <li>Priority support</li>
+                        <li>Custom topic creation</li>
+                    </ul>
+                    <a href="#" class="btn-cta" style="display: block; text-align: center;">Start 7-Day Free Trial</a>
+                    <div class="trial-note">
+                        Automatically moves to Free plan after trial ends. Cancel anytime.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Frequently Asked Questions</h2>
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <div class="faq-question">Is WriteRight SG officially endorsed by MOE?</div>
+                    <div class="faq-answer">While WriteRight SG is not directly endorsed by MOE, our assessment criteria are carefully aligned with MOE English Language syllabus standards and PSLE/O-Level marking schemes to ensure relevance and accuracy.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Is my child's data safe and secure?</div>
+                    <div class="faq-answer">Yes, we take data privacy seriously. All essays and personal information are encrypted and stored securely. We never share student data with third parties and comply with Singapore's Personal Data Protection Act (PDPA).</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Does WriteRight replace traditional tuition?</div>
+                    <div class="faq-answer">WriteRight complements traditional learning methods. While our AI provides instant, detailed feedback for practice, we recommend it as a supplement to classroom learning rather than a complete replacement for human instruction.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">What happens after my 7-day free trial ends?</div>
+                    <div class="faq-answer">Your account automatically switches to our Free plan (3 essays/month) unless you choose to continue with Plus. No credit card required for the trial, and you can upgrade or cancel at any time.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">How does the family rewards system work?</div>
+                    <div class="faq-answer">Parents can create custom rewards linked to specific writing achievements (like completing essays or reaching certain band scores). Students add wishes to their list, parents approve and link them to goals, and rewards become claimable when goals are met.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Can I use WriteRight for other subjects?</div>
+                    <div class="faq-answer">Currently, WriteRight focuses specifically on English essay writing. We're considering expansion to other subjects based on user feedback and demand.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bottom CTA -->
+    <section class="bottom-cta">
+        <div class="container">
+            <h2>Ready to improve your essays?</h2>
+            <p>Join thousands of students who are already writing better with WriteRight SG</p>
+            <a href="#" class="btn-cta">Start Your Free Trial Today</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <div class="footer-logo">WriteRight SG</div>
+                    <p style="color: #d1d5db;">Empowering students to write better essays with AI-powered feedback.</p>
+                </div>
+                <div>
+                    <h4 style="color: white; margin-bottom: 1rem;">Product</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Features</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">Topic Bank</a></li>
+                        <li><a href="#">Family Rewards</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: white; margin-bottom: 1rem;">Support</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">System Status</a></li>
+                        <li><a href="#">Feedback</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: white; margin-bottom: 1rem;">Legal</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Data Protection</a></li>
+                        <li><a href="#">Refund Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 WriteRight SG. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

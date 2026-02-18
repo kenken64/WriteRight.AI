@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WriteRight SG - Family Rewards System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
+            background-color: #f8fafc;
+        }
+
+        .page-header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 2rem 0;
+            margin-bottom: 3rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            font-size: 1.25rem;
+            color: #6b7280;
+        }
+
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .dashboard-mockup {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-layout {
+            display: flex;
+            min-height: 600px;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            padding: 1.5rem;
+        }
+
+        .sidebar-logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            color: #6b7280;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .nav-item.active {
+            background: #eff6ff;
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 2rem;
+            background: #f8fafc;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title-small {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-approve {
+            background: #059669;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .wishlist-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .wish-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .wish-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .wish-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .wish-icon {
+            font-size: 2rem;
+        }
+
+        .wish-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .wish-description {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-locked {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-claimable {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-pending {
+            background: #fde68a;
+            color: #92400e;
+        }
+
+        .progress-section {
+            margin-top: 1rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #2563eb;
+            transition: width 0.3s ease;
+        }
+
+        .claim-button {
+            background: #059669;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+
+        .empty-description {
+            color: #6b7280;
+            margin-bottom: 2rem;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .popular-wishes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .wish-chip {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            border: 1px solid #d1d5db;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .wish-chip:hover {
+            background: #e5e7eb;
+            border-color: #9ca3af;
+        }
+
+        .promise-score-card {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .promise-score-number {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .promise-score-label {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .promise-score-description {
+            opacity: 0.9;
+            font-size: 0.875rem;
+        }
+
+        .donut-chart {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: conic-gradient(#059669 0deg 306deg, #f59e0b 306deg 360deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1rem auto;
+            position: relative;
+        }
+
+        .donut-chart::before {
+            content: '';
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .donut-chart::after {
+            content: '85%';
+            position: absolute;
+            z-index: 1;
+            font-weight: 800;
+            color: #059669;
+        }
+
+        .pending-approvals {
+            margin-bottom: 2rem;
+        }
+
+        .approval-card {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .approval-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .approval-title {
+            font-weight: 700;
+            color: #92400e;
+        }
+
+        .approval-description {
+            color: #92400e;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .approval-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .achievement-dropdown {
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            margin-right: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .active-rewards {
+            margin-bottom: 2rem;
+        }
+
+        .reward-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .reward-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .reward-title {
+            font-weight: 700;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-divider {
+            border-top: 2px solid #e5e7eb;
+            margin: 3rem 0;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-layout {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <h1 class="page-title">Family Rewards System</h1>
+            <p class="page-subtitle">Clean UI mockups showing student wishlist and parent dashboard states</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Section 1: Student Wishlist (Populated) -->
+        <div class="section">
+            <h2 class="section-title">Student Wishlist - Populated State</h2>
+            <div class="dashboard-mockup">
+                <div class="dashboard-layout">
+                    <div class="sidebar">
+                        <div class="sidebar-logo">WriteRight SG</div>
+                        <nav>
+                            <a href="#" class="nav-item">
+                                <span>📚</span>
+                                <span>My Essays</span>
+                            </a>
+                            <a href="#" class="nav-item">
+                                <span>📊</span>
+                                <span>Progress</span>
+                            </a>
+                            <a href="#" class="nav-item active">
+                                <span>🎯</span>
+                                <span>My Wishlist</span>
+                            </a>
+                            <a href="#" class="nav-item">
+                                <span>🏆</span>
+                                <span>Achievements</span>
+                            </a>
+                            <a href="#" class="nav-item">
+                                <span>⚙️</span>
+                                <span>Settings</span>
+                            </a>
+                        </nav>
+                    </div>
+                    <div class="content-area">
+                        <div class="content-header">
+                            <h1 class="page-title-small">🎯 My Wishlist</h1>
+                            <button class="btn-primary">+ Add Wish</button>
+                        </div>
+                        
+                        <div class="wishlist-grid">
+                            <!-- Wish 1: Locked with Progress -->
+                            <div class="wish-card">
+                                <div class="wish-header">
+                                    <div class="wish-info">
+                                        <div class="wish-icon">🎬</div>
+                                        <div>
+                                            <div class="wish-title">Movie Night</div>
+                                            <div class="wish-description">Family movie night with popcorn and my choice of film</div>
+                                        </div>
+                                    </div>
+                                    <div class="status-badge status-locked">Locked</div>
+                                </div>
+                                <div class="progress-section">
+                                    <div class="progress-label">
+                                        <span>Complete 5 essays</span>
+                                        <span>3/5</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 60%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Wish 2: Claimable -->
+                            <div class="wish-card">
+                                <div class="wish-header">
+                                    <div class="wish-info">
+                                        <div class="wish-icon">🧋</div>
+                                        <div>
+                                            <div class="wish-title">Bubble Tea Trip</div>
+                                            <div class="wish-description">Trip to Gong Cha with friends after school</div>
+                                        </div>
+                                    </div>
+                                    <div class="status-badge status-claimable">Claimable! 🎉</div>
+                                </div>
+                                <div class="progress-section">
+                                    <div class="progress-label">
+                                        <span>Hit Band 4</span>
+                                        <span>✓ Completed</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 100%;"></div>
+                                    </div>
+                                </div>
+                                <button class="claim-button">Claim Reward</button>
+                            </div>
+
+                            <!-- Wish 3: Pending Parent Approval -->
+                            <div class="wish-card">
+                                <div class="wish-header">
+                                    <div class="wish-info">
+                                        <div class="wish-icon">🎮</div>
+                                        <div>
+                                            <div class="wish-title">30 Min Extra Gaming</div>
+                                            <div class="wish-description">Additional gaming time on weekends</div>
+                                        </div>
+                                    </div>
+                                    <div class="status-badge status-pending">Pending Parent Approval</div>
+                                </div>
+                                <div style="margin-top: 1rem; padding: 1rem; background: #fef3c7; border-radius: 0.5rem; font-size: 0.875rem; color: #92400e;">
+                                    <div style="font-weight: 600; margin-bottom: 0.5rem;">Waiting for parent to link achievement</div>
+                                    <div>Your parent needs to connect this wish to a writing goal before you can start working towards it.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 2: Student Wishlist (Empty State) -->
+        <div class="section">
+            <h2 class="section-title">Student Wishlist - Empty State</h2>
+            <div class="dashboard-mockup">
+                <div class="dashboard-layout">
+                    <div class="sidebar">
+                        <div class="sidebar-logo">WriteRight SG</div>
+                        <nav>
+                            <a href="#" class="nav-item">
+                                <span>📚</span>
+                                <span>My Essays</span>
+                            </a>
+                            <a href="#" class="nav-item">
+                                <span>📊</span>
+                                <span>Progress</span>
+                            </a>
+                            <a href="#" class="nav-item active">
+                                <span>🎯</span>
+                                <span>My Wishlist</span>
+                            </a>
+                            <a href="#" class="nav-item">
+                                <span>🏆</span>
+                                <span>Achievements</span>
+                            </a>
+                            <a href="#" class="nav-item">
+                                <span>⚙️</span>
+                                <span>Settings</span>
+                            </a>
+                        </nav>
+                    </div>
+                    <div class="content-area">
+                        <div class="content-header">
+                            <h1 class="page-title-small">🎯 My Wishlist</h1>
+                            <button class="btn-primary">+ Add Wish</button>
+                        </div>
+                        
+                        <div class="empty-state">
+                            <div class="empty-icon">🎯</div>
+                            <h3 class="empty-title">What do you want to earn?</h3>
+                            <p class="empty-description">
+                                Add a wish — your parent will link it to a writing goal. Hit the goal, earn the reward.
+                            </p>
+                            
+                            <div class="popular-wishes">
+                                <div class="wish-chip">🎬 Movie night</div>
+                                <div class="wish-chip">🧋 Bubble tea</div>
+                                <div class="wish-chip">🎮 Extra gaming</div>
+                                <div class="wish-chip">📖 New book</div>
+                            </div>
+                            
+                            <button class="btn-primary">Add your first wish</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 3: Parent Rewards Dashboard (Populated) -->
+        <div class="section">
+            <h2 class="section-title">Parent Dashboard - Populated State</h2>
+            <div class="dashboard-mockup">
+                <div class="dashboard-layout">
+                    <div class="sidebar">
+                        <div class="sidebar-logo">WriteRight SG</div>
+                        <nav>
+                            <a href="#" class="nav-item">
+                                <span>📊</span>
+                                <span>Child's Progress</span>
+                            </a>
+                            <a href="#" class="nav-item">
+                                <span>📝</span>
+                                <span>Essay Reviews</span>
+                            </a>
+                            <a href="#" class="nav-item active">
+                                <span>🎁</span>
+                                <span>Rewards</span>
+                            </a>
+                            <a href="#" class="nav-item">
+                                <span>⚙️</span>
+                                <span>Settings</span>
+                            </a>
+                        </nav>
+                    </div>
+                    <div class="content-area">
+                        <div class="content-header">
+                            <h1 class="page-title-small">🎁 Family Rewards</h1>
+                            <button class="btn-primary">+ Add Surprise Reward</button>
+                        </div>
+                        
+                        <!-- Promise Score Card -->
+                        <div class="promise-score-card">
+                            <div class="donut-chart"></div>
+                            <div class="promise-score-label">Your Promise Score</div>
+                            <div class="promise-score-description">Great job keeping promises to your child!</div>
+                        </div>
+
+                        <!-- Pending Wish Approvals -->
+                        <div class="pending-approvals">
+                            <h3 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 1rem;">Pending Wish Approvals</h3>
+                            
+                            <div class="approval-card">
+                                <div class="approval-header">
+                                    <div>
+                                        <div class="approval-title">Sarah wants "30 Min Extra Gaming"</div>
+                                        <div class="approval-description">Your child has requested this reward. Choose a writing achievement to link it to:</div>
+                                    </div>
+                                </div>
+                                <div style="margin-bottom: 1rem;">
+                                    <select class="achievement-dropdown">
+                                        <option>Select an achievement...</option>
+                                        <option>Complete 3 essays</option>
+                                        <option>Hit Band 4</option>
+                                        <option>Improve vocabulary score</option>
+                                        <option>Submit essay within 1 week</option>
+                                    </select>
+                                </div>
+                                <div class="approval-actions">
+                                    <button class="btn-approve">Approve</button>
+                                    <button class="btn-secondary">Decline</button>
+                                </div>
+                            </div>
+
+                            <div class="approval-card">
+                                <div class="approval-header">
+                                    <div>
+                                        <div class="approval-title">Sarah wants "Ice Cream Date"</div>
+                                        <div class="approval-description">One-on-one ice cream trip after school</div>
+                                    </div>
+                                </div>
+                                <div style="margin-bottom: 1rem;">
+                                    <select class="achievement-dropdown">
+                                        <option>Select an achievement...</option>
+                                        <option>Complete 5 essays</option>
+                                        <option>Hit Band 5</option>
+                                        <option>Perfect attendance (1 week)</option>
+                                        <option>Improve organization score</option>
+                                    </select>
+                                </div>
+                                <div class="approval-actions">
+                                    <button class="btn-approve">Approve</button>
+                                    <button class="btn-secondary">Decline</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Rewards -->
+                        <div class="active-rewards">
+                            <h3 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 1rem;">Active Rewards</h3>
+                            
+                            <div class="reward-card">
+                                <div class="reward-header">
+                                    <div class="reward-title">
+                                        <span>🎬</span>
+                                        <span>Movie Night</span>
+                                    </div>
+                                    <div class="status-badge status-locked">In Progress</div>
+                                </div>
+                                <div class="progress-section">
+                                    <div class="progress-label">
+                                        <span>Complete 5 essays</span>
+                                        <span>3/5</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 60%;"></div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 1rem; font-size: 0.875rem; color: #6b7280;">
+                                    Sarah is making good progress! 2 more essays to go.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 4: Parent Dashboard (Empty State) -->
+        <div class="section">
+            <h2 class="section-title">Parent Dashboard - Empty State</h2>
+            <div class="dashboard-mockup">
+                <div class="dashboard-layout">
+                    <div class="sidebar">
+                        <div class="sidebar-logo">WriteRight SG</div>
+                        <nav>
+                            <a href="#" class="nav-item">
+                                <span>📊</span>
+                                <span>Child's Progress</span>
+                            </a>
+                            <a href="#" class="nav-item">
+                                <span>📝</span>
+                                <span>Essay Reviews</span>
+                            </a>
+                            <a href="#" class="nav-item active">
+                                <span>🎁</span>
+                                <span>Rewards</span>
+                            </a>
+                            <a href="#" class="nav-item">
+                                <span>⚙️</span>
+                                <span>Settings</span>
+                            </a>
+                        </nav>
+                    </div>
+                    <div class="content-area">
+                        <div class="content-header">
+                            <h1 class="page-title-small">🎁 Family Rewards</h1>
+                            <button class="btn-primary">+ Add Surprise Reward</button>
+                        </div>
+                        
+                        <!-- Promise Score Card (Empty State) -->
+                        <div class="promise-score-card">
+                            <div class="promise-score-number">--</div>
+                            <div class="promise-score-label">Promise Score</div>
+                            <div class="promise-score-description">Complete your first reward cycle to see your score</div>
+                        </div>
+
+                        <div class="empty-state">
+                            <div class="empty-icon">🎁</div>
+                            <h3 class="empty-title">Your child hasn't added any wishes yet</h3>
+                            <p class="empty-description">
+                                When your child adds wishes to their list, you'll be able to approve them and link them to writing achievements here. You can also create surprise rewards proactively!
+                            </p>
+                            
+                            <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 0.75rem; padding: 1.5rem; margin: 2rem 0; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
+                                <div style="font-weight: 700; color: #0c4a6e; margin-bottom: 1rem;">How it works:</div>
+                                <ol style="color: #0c4a6e; padding-left: 1.25rem; line-height: 1.8;">
+                                    <li>Child adds wishes to their wishlist</li>
+                                    <li>You approve wishes and link them to writing goals</li>
+                                    <li>Child works towards goals to unlock rewards</li>
+                                    <li>You fulfill promises to maintain your Promise Score</li>
+                                </ol>
+                            </div>
+                            
+                            <button class="btn-primary">Add a Surprise Reward</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
