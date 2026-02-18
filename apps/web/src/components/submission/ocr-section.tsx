@@ -40,6 +40,8 @@ export function OcrSection({ submissionId, text, imageUrls }: OcrSectionProps) {
       if (!res.ok) throw new Error('Failed to save');
       setDisplayText(draft);
       setEditing(false);
+      // Reload page to reflect new status (re-evaluation triggered in background)
+      window.location.reload();
     } catch (err) {
       console.error('Failed to save OCR text:', err);
     } finally {

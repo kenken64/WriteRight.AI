@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { after } from "next/server";
+import { createServerSupabaseClient, createAdminSupabaseClient } from "@/lib/supabase/server";
 import { sanitizeInput } from "@/lib/middleware/sanitize";
+import { evaluateEssay } from "@writeright/ai/marking/engine";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -24,19 +26,74 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const admin = createAdminSupabaseClient();
   const body = await req.json();
+  const sanitizedText = sanitizeInput(body.ocrText);
+
+  // Save edited text and reset status
   const { data, error } = await supabase
     .from("submissions")
     .update({
-      ocr_text: sanitizeInput(body.ocrText),
+      ocr_text: sanitizedText,
       ocr_confidence: body.confidence ?? null,
       status: "ocr_complete",
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)
-    .select()
+    .select("*, assignment:assignments(*)")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ submission: data });
+
+  // Delete stale rewrites — they were generated from the old text
+  await admin.from("rewrites").delete().eq("submission_id", id);
+
+  // Auto re-evaluate in background with the edited text
+  after(async () => {
+    console.log(`[ocr-text:bg] Re-evaluating submission ${id} after OCR text edit`);
+    try {
+      await admin.from("submissions").update({ status: "evaluating", updated_at: new Date().toISOString() }).eq("id", id);
+
+      const result = await evaluateEssay({
+        essayText: sanitizedText,
+        essayType: data.assignment?.essay_type ?? "continuous",
+        essaySubType: data.assignment?.essay_sub_type ?? undefined,
+        prompt: data.assignment?.prompt ?? "",
+        guidingPoints: data.assignment?.guiding_points ?? undefined,
+        level: "sec4",
+      });
+
+      const evaluation = {
+        submission_id: id,
+        essay_type: result.essayType,
+        rubric_version: result.rubricVersion,
+        model_id: result.modelId,
+        prompt_version: result.promptVersion,
+        dimension_scores: result.dimensionScores,
+        total_score: result.totalScore,
+        band: result.band,
+        strengths: result.strengths,
+        weaknesses: result.weaknesses,
+        next_steps: result.nextSteps,
+        confidence: result.confidence,
+        review_recommended: result.reviewRecommended,
+      };
+
+      const { error: evalErr } = await admin.from("evaluations").insert(evaluation).select().single();
+
+      if (evalErr) {
+        console.error(`[ocr-text:bg] Evaluation insert failed:`, evalErr.message);
+        await admin.from("submissions").update({ status: "failed", failure_reason: evalErr.message, updated_at: new Date().toISOString() }).eq("id", id);
+        return;
+      }
+
+      await admin.from("submissions").update({ status: "evaluated", updated_at: new Date().toISOString() }).eq("id", id);
+      console.log(`[ocr-text:bg] Re-evaluation complete for ${id} — score: ${result.totalScore}, band: ${result.band}`);
+    } catch (err: any) {
+      console.error(`[ocr-text:bg] Re-evaluation error:`, err.message);
+      await admin.from("submissions").update({ status: "failed", failure_reason: err.message, updated_at: new Date().toISOString() }).eq("id", id);
+    }
+  });
+
+  return NextResponse.json({ submission: data, reEvaluating: true });
 }
