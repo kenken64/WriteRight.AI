@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WriteRight SG — Landing Page Mockup (Issue #4)</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8f9fa; color: #1a1a2e; }
+    
+    .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+    
+    .header { background: #fff; border-bottom: 2px solid #e0e0e0; padding: 20px; text-align: center; position: sticky; top: 0; z-index: 10; }
+    .header h1 { font-size: 24px; color: #2563eb; }
+    .header p { color: #666; margin-top: 4px; font-size: 14px; }
+    .badge { display: inline-block; background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-top: 8px; }
+    
+    .section { background: #fff; border-radius: 16px; padding: 32px; margin: 24px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .section h2 { font-size: 20px; margin-bottom: 8px; color: #1a1a2e; }
+    .section h3 { font-size: 16px; color: #2563eb; margin-bottom: 12px; }
+    .section .subtitle { color: #666; font-size: 14px; margin-bottom: 20px; }
+    
+    .current { border-left: 4px solid #ef4444; }
+    .proposed { border-left: 4px solid #22c55e; }
+    .current-label { color: #ef4444; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    .proposed-label { color: #22c55e; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    
+    .screenshot-frame { border: 2px solid #e0e0e0; border-radius: 12px; overflow: hidden; margin: 16px 0; background: #fafafa; }
+    .screenshot-frame img { width: 100%; display: block; }
+    .screenshot-frame .caption { padding: 8px 16px; background: #f0f0f0; font-size: 12px; color: #666; text-align: center; }
+    
+    .mockup-frame { border: 3px dashed #2563eb; border-radius: 12px; padding: 40px; margin: 16px 0; background: #eff6ff; text-align: center; min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .mockup-frame .icon { font-size: 48px; margin-bottom: 12px; }
+    .mockup-frame .label { font-size: 16px; font-weight: 600; color: #2563eb; }
+    .mockup-frame .desc { font-size: 13px; color: #666; margin-top: 8px; max-width: 400px; }
+    
+    .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 16px 0; }
+    @media (max-width: 768px) { .side-by-side { grid-template-columns: 1fr; } }
+    
+    .placement-note { background: #fef9c3; border: 1px solid #fde047; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #854d0e; margin: 12px 0; }
+    .placement-note strong { color: #92400e; }
+    
+    .arrow { text-align: center; font-size: 32px; color: #2563eb; padding: 8px 0; }
+
+    .hero-mockup { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; }
+    .hero-mockup .text-side h2 { font-size: 28px; line-height: 1.2; }
+    .hero-mockup .text-side p { color: #666; margin: 12px 0; }
+    .hero-mockup .text-side .cta { display: inline-block; background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 12px; font-weight: 600; text-decoration: none; }
+    @media (max-width: 768px) { .hero-mockup { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎨 WriteRight SG — Landing Page Mockup</h1>
+  <p>Issue #4: Product Screenshots &amp; Visual Placement</p>
+  <div class="badge">⚠️ FOR REVIEW ONLY — Not implemented yet</div>
+</div>
+
+<div class="container">
+
+  <!-- ==================== SECTION 1: HERO ==================== -->
+  <div class="section proposed">
+    <span class="proposed-label">📐 Proposed Change — Hero Section</span>
+    <h2>Add Product Screenshot to Hero</h2>
+    <p class="subtitle">The hero currently has text + buttons + whitespace. Adding a product visual is the highest-impact change for conversion.</p>
+    
+    <div class="placement-note">
+      <strong>Placement:</strong> Right side of hero text on desktop. Below the CTA buttons on mobile. The screenshot should show the essay editor with AI feedback visible — this is the "money shot" that shows visitors what they're signing up for.
+    </div>
+
+    <h3>Proposed Hero Layout</h3>
+    <div class="hero-mockup">
+      <div class="text-side">
+        <p style="background:#dbeafe;display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;color:#2563eb;">🎓 Aligned to MOE 1184 Syllabus</p>
+        <h2>AI Essay Feedback for<br><span style="color:#2563eb">Singapore Students</span></h2>
+        <p>Get instant, rubric-aligned feedback on English essays. Real-time scoring as you write.</p>
+        <a class="cta" href="#">Try Free — 3 Essays/Month</a>
+      </div>
+      <div>
+        <div class="mockup-frame" style="min-height:250px;">
+          <div class="icon">💻</div>
+          <div class="label">Product Screenshot Here</div>
+          <div class="desc">Browser mockup frame showing the essay editor with AI feedback panel, band scores, and coaching suggestions visible. Use the submission/feedback page once we have a graded essay.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SECTION 2: HOW IT WORKS ==================== -->
+  <div class="section proposed">
+    <span class="proposed-label">📐 Proposed Change — How It Works</span>
+    <h2>Add Screenshots to Each Step</h2>
+    <p class="subtitle">Currently 3 text-only cards with emoji. Each step should show what the student actually sees.</p>
+
+    <div class="side-by-side" style="grid-template-columns: 1fr 1fr 1fr;">
+      <div>
+        <h3>Step 1: Write or Upload</h3>
+        <div class="screenshot-frame">
+          <img src="screenshots/04-submit-essay-upload.jpg" alt="Submit Essay page">
+          <div class="caption">Current: Submit Essay (OCR upload)</div>
+        </div>
+        <div class="placement-note">
+          <strong>Note:</strong> This shows the upload flow. We also need a screenshot of the Tiptap editor with AI coaching sidebar for the "Write" part. Currently the editor isn't accessible without uploading first.
+        </div>
+      </div>
+      <div>
+        <h3>Step 2: Get Scored &amp; Feedback</h3>
+        <div class="mockup-frame" style="min-height:200px;">
+          <div class="icon">📊</div>
+          <div class="label">Feedback Page Screenshot</div>
+          <div class="desc">Need a graded essay showing band scores, dimension breakdown, and specific feedback quotes. This is the most important screenshot — it proves the product works.</div>
+        </div>
+      </div>
+      <div>
+        <h3>Step 3: Improve &amp; Earn Rewards</h3>
+        <div class="screenshot-frame">
+          <img src="screenshots/05-achievements.jpg" alt="Achievements page">
+          <div class="caption">Current: Achievements page (all badges)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SECTION 3: AVAILABLE SCREENSHOTS ==================== -->
+  <div class="section current">
+    <span class="current-label">📸 Captured Screenshots (Available Now)</span>
+    <h2>What We Have</h2>
+    <p class="subtitle">These are real screenshots from the live production site, captured today.</p>
+
+    <div class="side-by-side">
+      <div>
+        <h3>Dashboard — Assignments</h3>
+        <div class="screenshot-frame">
+          <img src="screenshots/01-dashboard-assignments.jpg" alt="Dashboard">
+          <div class="caption">Clean sidebar, assignments list, "Start your writing journey" CTA</div>
+        </div>
+      </div>
+      <div>
+        <h3>Create Assignment</h3>
+        <div class="screenshot-frame">
+          <img src="screenshots/02-create-assignment.jpg" alt="Create Assignment">
+          <div class="caption">Essay type selection, sub-type, prompt, word limits</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-by-side">
+      <div>
+        <h3>Assignment Detail</h3>
+        <div class="screenshot-frame">
+          <img src="screenshots/03-assignment-detail.jpg" alt="Assignment Detail">
+          <div class="caption">Prompt display, "Submit Essay" CTA, submissions list</div>
+        </div>
+      </div>
+      <div>
+        <h3>Submit Essay (OCR Upload)</h3>
+        <div class="screenshot-frame">
+          <img src="screenshots/04-submit-essay-upload.jpg" alt="Submit Essay">
+          <div class="caption">Tips for best results, drag &amp; drop upload area</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-by-side">
+      <div>
+        <h3>Achievements</h3>
+        <div class="screenshot-frame">
+          <img src="screenshots/05-achievements.jpg" alt="Achievements">
+          <div class="caption">Practice, Improvement, Mastery, Streak, Special categories — 20+ badges</div>
+        </div>
+      </div>
+      <div>
+        <h3>Topic Bank</h3>
+        <div class="screenshot-frame">
+          <img src="screenshots/06-topic-bank.jpg" alt="Topic Bank">
+          <div class="caption">Filter by category, AI-generated prompts, one-click assign</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SECTION 4: WHAT'S MISSING ==================== -->
+  <div class="section" style="border-left: 4px solid #f59e0b;">
+    <span style="color:#f59e0b;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px;">⚠️ Screenshots We Still Need</span>
+    <h2>Missing Screenshots for Full Mockup</h2>
+    <p class="subtitle">These pages need a completed essay submission to capture.</p>
+
+    <div class="side-by-side" style="grid-template-columns: 1fr 1fr 1fr;">
+      <div class="mockup-frame">
+        <div class="icon">✏️</div>
+        <div class="label">Tiptap Essay Editor</div>
+        <div class="desc">The built-in editor with AI coaching sidebar, grammar highlights, and live scoring. This is the hero screenshot.</div>
+      </div>
+      <div class="mockup-frame">
+        <div class="icon">📊</div>
+        <div class="label">Grading Results</div>
+        <div class="desc">Band scores, dimension breakdown (Task Fulfilment + Language), specific feedback quoting student text, strengths/weaknesses.</div>
+      </div>
+      <div class="mockup-frame">
+        <div class="icon">🔄</div>
+        <div class="label">Model Rewrite</div>
+        <div class="desc">Side-by-side diff view showing original vs improved version with explanations.</div>
+      </div>
+    </div>
+
+    <div class="side-by-side">
+      <div class="mockup-frame">
+        <div class="icon">📈</div>
+        <div class="label">Performance Analytics</div>
+        <div class="desc">Score trend chart, band progression, radar chart — needs multiple submissions to look good.</div>
+      </div>
+      <div class="mockup-frame">
+        <div class="icon">⭐</div>
+        <div class="label">Wishlist / Rewards</div>
+        <div class="desc">Parent promise system, reward items, claim flow. Needs parent account with linked student.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SECTION 5: RECOMMENDED PLACEMENT ==================== -->
+  <div class="section proposed">
+    <span class="proposed-label">📋 Recommendation Summary</span>
+    <h2>Where Screenshots Should Go on Landing Page</h2>
+
+    <table style="width:100%;border-collapse:collapse;margin-top:16px;">
+      <thead>
+        <tr style="border-bottom:2px solid #e0e0e0;text-align:left;">
+          <th style="padding:8px 12px;font-size:14px;">Section</th>
+          <th style="padding:8px 12px;font-size:14px;">Screenshot</th>
+          <th style="padding:8px 12px;font-size:14px;">Status</th>
+          <th style="padding:8px 12px;font-size:14px;">Priority</th>
+        </tr>
+      </thead>
+      <tbody style="font-size:13px;">
+        <tr style="border-bottom:1px solid #f0f0f0;">
+          <td style="padding:8px 12px;font-weight:600;">Hero (right side)</td>
+          <td style="padding:8px 12px;">Essay editor with AI feedback</td>
+          <td style="padding:8px 12px;"><span style="color:#ef4444;">❌ Need to capture</span></td>
+          <td style="padding:8px 12px;"><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:11px;">P0 — Highest impact</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #f0f0f0;">
+          <td style="padding:8px 12px;font-weight:600;">Step 1: Write or Upload</td>
+          <td style="padding:8px 12px;">Submit essay / editor</td>
+          <td style="padding:8px 12px;"><span style="color:#f59e0b;">⚠️ Have upload, need editor</span></td>
+          <td style="padding:8px 12px;"><span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:4px;font-size:11px;">P1</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #f0f0f0;">
+          <td style="padding:8px 12px;font-weight:600;">Step 2: Get Scored</td>
+          <td style="padding:8px 12px;">Grading results page</td>
+          <td style="padding:8px 12px;"><span style="color:#ef4444;">❌ Need to capture</span></td>
+          <td style="padding:8px 12px;"><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:11px;">P0</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #f0f0f0;">
+          <td style="padding:8px 12px;font-weight:600;">Step 3: Improve</td>
+          <td style="padding:8px 12px;">Achievements page</td>
+          <td style="padding:8px 12px;"><span style="color:#22c55e;">✅ Captured</span></td>
+          <td style="padding:8px 12px;"><span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-size:11px;">Ready</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #f0f0f0;">
+          <td style="padding:8px 12px;font-weight:600;">Register page (left panel)</td>
+          <td style="padding:8px 12px;">Feedback page thumbnail</td>
+          <td style="padding:8px 12px;"><span style="color:#ef4444;">❌ Need to capture</span></td>
+          <td style="padding:8px 12px;"><span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:4px;font-size:11px;">P2</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="placement-note" style="margin-top:20px;">
+      <strong>Next step:</strong> To capture the missing screenshots (editor, grading results, rewrite), we need to submit a real essay through the system and get it graded. This requires the OpenAI API to be configured on the production Supabase instance. Kenneth — can you submit a test essay so we can capture the feedback page?
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
