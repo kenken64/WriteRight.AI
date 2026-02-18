@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WriteRight SG — V3 Redesign Proposal</title>
+<style>
+  :root {
+    --bg: #fafafa; --surface: #fff; --text: #1a1a1a; --muted: #666;
+    --accent: #2563eb; --accent-light: #dbeafe; --red: #dc2626; --red-light: #fee2e2;
+    --green: #16a34a; --green-light: #dcfce7; --amber: #d97706; --amber-light: #fef3c7;
+    --purple: #7c3aed; --purple-light: #ede9fe; --border: #e5e7eb; --radius: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+  .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+  h1 { font-size: 2rem; margin-bottom: 0.25rem; }
+  h2 { font-size: 1.5rem; margin-top: 3rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--accent); }
+  h3 { font-size: 1.15rem; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+  h4 { font-size: 1rem; margin-top: 1rem; margin-bottom: 0.25rem; }
+  p, li { margin-bottom: 0.5rem; }
+  ul, ol { padding-left: 1.5rem; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+  th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; vertical-align: top; }
+  th { background: #f3f4f6; font-weight: 600; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: var(--radius); overflow-x: auto; font-size: 0.8rem; line-height: 1.4; margin: 1rem 0; }
+  code { background: #f1f5f9; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.85em; }
+  .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+  .callout { padding: 1rem 1.25rem; border-radius: var(--radius); margin: 1rem 0; border-left: 4px solid; }
+  .callout-red { background: var(--red-light); border-color: var(--red); }
+  .callout-green { background: var(--green-light); border-color: var(--green); }
+  .callout-amber { background: var(--amber-light); border-color: var(--amber); }
+  .callout-blue { background: var(--accent-light); border-color: var(--accent); }
+  .callout-purple { background: var(--purple-light); border-color: var(--purple); }
+  .callout strong { display: block; margin-bottom: 0.25rem; }
+  .tag { display: inline-block; font-size: 0.75rem; padding: 0.1rem 0.5rem; border-radius: 99px; font-weight: 600; }
+  .tag-remove { background: var(--red-light); color: var(--red); }
+  .tag-merge { background: var(--amber-light); color: var(--amber); }
+  .tag-keep { background: var(--green-light); color: var(--green); }
+  .tag-new { background: var(--accent-light); color: var(--accent); }
+  .tag-postpone { background: #f3f4f6; color: var(--muted); }
+  .toc { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin: 1.5rem 0; }
+  .toc ol { margin-bottom: 0; }
+  .toc li { margin-bottom: 0.3rem; }
+  .toc a { text-decoration: none; color: var(--accent); }
+  .toc a:hover { text-decoration: underline; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+  @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; }
+  a { color: var(--accent); }
+  .verdict { font-size: 1.1rem; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>🦞 WriteRight SG — V3 Redesign Proposal</h1>
+<p class="meta">
+  Prepared by Similancao · Principal Product Design · 18 Feb 2026<br>
+  For review: Sebastian, Kenneth, Sam · Status: <strong>DRAFT</strong>
+</p>
+
+<div class="toc">
+<strong>Table of Contents</strong>
+<ol>
+  <li><a href="#a">A. UX Diagnosis — What's Broken</a></li>
+  <li><a href="#b">B. V3 Information Architecture</a></li>
+  <li><a href="#c">C. Value Proposition System</a></li>
+  <li><a href="#d1">D1. Mockup 1 — Outcome-First / Trust-First</a></li>
+  <li><a href="#d2">D2. Mockup 2 — Workflow-First / Product-Demo-First</a></li>
+  <li><a href="#e">E. Acceptance Criteria & Implementation Roadmap</a></li>
+</ol>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="a">A. UX Diagnosis — What's Broken</h2>
+
+<h3>A1. Top 5 Clarity Problems</h3>
+<table>
+  <tr><th>#</th><th>Problem</th><th>Impact</th><th>Who it hurts</th></tr>
+  <tr>
+    <td>1</td>
+    <td><strong>No product shown on landing page.</strong> Parents can't see what their child will use. Zero screenshots, zero demo.</td>
+    <td>Parents bounce — they don't trust what they can't see.</td>
+    <td>Parents (buyers)</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td><strong>Headline doesn't name the outcome.</strong> Current copy talks about "AI-powered essay feedback" — a feature, not a result.</td>
+    <td>Value prop fails the 10-second test. Parents think "another AI thing."</td>
+    <td>Parents, Students</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td><strong>Fabricated social proof.</strong> Fake testimonials + inflated claims ("thousands of students", "70% teacher agreement") destroy trust the moment anyone investigates.</td>
+    <td>One skeptical parent shares it in a WhatsApp group and your credibility is gone.</td>
+    <td>Everyone</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td><strong>Pricing value unclear.</strong> Free = 3/month vs Plus = unlimited. But what does one submission actually deliver? Parents don't know.</td>
+    <td>Low conversion to Plus — parents can't calculate ROI vs tuition.</td>
+    <td>Parents</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td><strong>Student nav is a junk drawer.</strong> 8 items including 3 gamification features (Achievements, Wishlist, Trophy Case) that are adjacent concepts presented as separate destinations.</td>
+    <td>Cognitive overload. Students don't know where to go. Key actions buried.</td>
+    <td>Students</td>
+  </tr>
+</table>
+
+<h3>A2. Top 5 Friction Points</h3>
+<table>
+  <tr><th>#</th><th>Friction</th><th>Where</th><th>Fix type</th></tr>
+  <tr>
+    <td>1</td>
+    <td><strong>Registration requires parent to create account AND create first assignment before student sees anything.</strong> Too many steps before value.</td>
+    <td>Onboarding</td>
+    <td>Restructure flow</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td><strong>No sample essay / demo mode.</strong> Both parent and student must commit (register + create assignment + write essay) before seeing ANY AI feedback. That's 10+ minutes to first value.</td>
+    <td>Activation</td>
+    <td>Add instant demo</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td><strong>Topics page is a separate nav item</strong> but it's only used when creating an assignment. It's a reference page masquerading as a primary destination.</td>
+    <td>Student + Parent nav</td>
+    <td>Merge into assignment creation</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td><strong>No progress visibility for parents on dashboard home.</strong> Parents log in and see… a list of assignments. Not "how is my child doing?"</td>
+    <td>Parent dashboard</td>
+    <td>Redesign dashboard home</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td><strong>No FAQ, no Terms, no Privacy Policy on landing page.</strong> Singapore parents are privacy-conscious (PDPA). Missing legal links = red flag.</td>
+    <td>Landing page footer</td>
+    <td>Add content</td>
+  </tr>
+</table>
+
+<h3>A3. Scope Discipline — Remove / Merge / Postpone</h3>
+<table>
+  <tr><th>Feature</th><th>Action</th><th>Rationale</th></tr>
+  <tr>
+    <td>Fake testimonials</td>
+    <td><span class="tag tag-remove">REMOVE</span></td>
+    <td>Liability. Replace with real quotes or nothing.</td>
+  </tr>
+  <tr>
+    <td>"Thousands of students" claim</td>
+    <td><span class="tag tag-remove">REMOVE</span></td>
+    <td>False. Replace with actual count or omit.</td>
+  </tr>
+  <tr>
+    <td>"70% teacher agreement" stat</td>
+    <td><span class="tag tag-remove">REMOVE</span></td>
+    <td>Unverifiable. Use when you have real data.</td>
+  </tr>
+  <tr>
+    <td>Topics (nav item)</td>
+    <td><span class="tag tag-merge">MERGE</span> → into Assignment creation flow</td>
+    <td>Topics aren't a destination. They're a picker inside "Create Assignment."</td>
+  </tr>
+  <tr>
+    <td>Achievements + Trophy Case</td>
+    <td><span class="tag tag-merge">MERGE</span> → single "Rewards" tab</td>
+    <td>Same concept. Achievements = what you earned. Trophy Case = where you see them. Combine.</td>
+  </tr>
+  <tr>
+    <td>Wishlist</td>
+    <td><span class="tag tag-merge">MERGE</span> → into "Rewards" tab as a sub-section</td>
+    <td>Wishlist is part of the rewards loop, not a standalone destination.</td>
+  </tr>
+  <tr>
+    <td>My Performance</td>
+    <td><span class="tag tag-merge">MERGE</span> → Dashboard home</td>
+    <td>Performance should BE the home view, not a separate nav item.</td>
+  </tr>
+  <tr>
+    <td>Analytics (parent)</td>
+    <td><span class="tag tag-merge">MERGE</span> → Dashboard home</td>
+    <td>Same logic. Parents should see progress on landing.</td>
+  </tr>
+  <tr>
+    <td>Teacher role</td>
+    <td><span class="tag tag-postpone">POSTPONE</span></td>
+    <td>Not launched. Don't design for it yet. Ship parent+student V3 first.</td>
+  </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="b">B. V3 Information Architecture</h2>
+
+<h3>B1. Primary Navigation (Max 5 Items)</h3>
+
+<div class="grid2">
+<div class="card">
+  <h4>Student Nav (V3) — 4 items</h4>
+  <ol>
+    <li><strong>Home</strong> — Performance summary, recent feedback, streak</li>
+    <li><strong>Write</strong> — Active assignments + start writing</li>
+    <li><strong>History</strong> — Past submissions + scores over time</li>
+    <li><strong>Rewards</strong> — Achievements, trophies, wishlist (combined)</li>
+  </ol>
+  <p><em>Settings → profile icon menu (top-right)</em></p>
+</div>
+<div class="card">
+  <h4>Parent Nav (V3) — 4 items</h4>
+  <ol>
+    <li><strong>Home</strong> — Child's progress dashboard, score trends</li>
+    <li><strong>Assignments</strong> — Create, manage, browse topics (inline)</li>
+    <li><strong>Submissions</strong> — Review child's work + AI feedback</li>
+    <li><strong>Rewards</strong> — Manage rewards, view achievements</li>
+  </ol>
+  <p><em>Settings + Billing → profile icon menu (top-right)</em></p>
+</div>
+</div>
+
+<div class="callout callout-blue">
+  <strong>Rationale</strong>
+  Every nav item answers a task: "How's my kid doing?" (Home), "What should I write?" (Write/Assignments), "What did I write before?" (History/Submissions), "What did I earn?" (Rewards). No jargon. No dead-end reference pages.
+</div>
+
+<h3>B2. Secondary / Settings Structure</h3>
+<table>
+  <tr><th>Location</th><th>Items</th></tr>
+  <tr><td>Profile menu (avatar, top-right)</td><td>Account Settings, Subscription & Billing (parent only), Help, Sign Out</td></tr>
+  <tr><td>Footer (landing page)</td><td>About, FAQ, Terms of Service, Privacy Policy, Contact</td></tr>
+</table>
+
+<h3>B3. Landing → First Success Path</h3>
+<pre>
+LANDING PAGE
+  │
+  ├─→ [Try a sample essay] ←── INSTANT DEMO (no signup)
+  │     │                        Paste/type 150 words → get AI feedback
+  │     │                        ✅ First "wow" moment in &lt;90 seconds
+  │     └─→ "Want to save this? Create a free account"
+  │
+  └─→ [Start free — 3 essays/month]
+        │
+        ├─→ Register (email + password + role: parent/student)
+        │
+        ├─→ Onboarding (3 steps max):
+        │     1. "What's your child's level?" (Sec 1-5 / JC)
+        │     2. "Pick a topic or paste your own"
+        │     3. Student writes → submits → gets feedback
+        │     ✅ First scored essay in &lt;2 minutes
+        │
+        └─→ Dashboard (Home)
+</pre>
+
+<div class="callout callout-green">
+  <strong>Key change: Instant demo before signup.</strong>
+  Let parents SEE the AI feedback on a sample essay before asking them to register. This is the single highest-leverage change for conversion. Wispr Flow does this — you can try dictation before downloading.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="c">C. Value Proposition System</h2>
+
+<h3>C1. Headlines (pick one)</h3>
+<table>
+  <tr><th>Angle</th><th>Headline</th><th>Why</th></tr>
+  <tr>
+    <td>Outcome</td>
+    <td><strong>"Better essays, better grades — in minutes, not months"</strong></td>
+    <td>Names the result parents want. Time contrast highlights speed vs tuition.</td>
+  </tr>
+  <tr>
+    <td>Pain relief</td>
+    <td><strong>"Your child's English essay, scored and improved — before dinner"</strong></td>
+    <td>Visceral. Parents picture the evening routine. "Before dinner" = fast + tangible.</td>
+  </tr>
+  <tr>
+    <td>Differentiation</td>
+    <td><strong>"AI essay coaching that follows Singapore's marking scheme"</strong></td>
+    <td>MOE alignment is the moat. No other AI tool does this. Speaks to parents who know the system.</td>
+  </tr>
+</table>
+
+<div class="callout callout-purple">
+  <strong>🦞 Recommendation: Lead with Headline 1 or 2. Use Headline 3 as a sub-section header.</strong>
+  Outcome/pain angles convert better above the fold. The MOE differentiation works as a supporting "why us" point, not the lead.
+</div>
+
+<h3>C2. Subheadlines</h3>
+<ol>
+  <li>"WriteRight gives your child instant, detailed feedback on English essays — scored to MOE standards, with specific tips to improve each paragraph."</li>
+  <li>"Submit an essay, get a score, feedback, and a model rewrite in under 2 minutes. No waiting for teacher marks."</li>
+  <li>"Like having a patient English tutor available 24/7 — at a fraction of the cost."</li>
+</ol>
+
+<h3>C3. Benefit Stack</h3>
+<table>
+  <tr><th>Benefit (what they get)</th><th>Feature (how it works)</th><th>Proof point (why believe it)</th></tr>
+  <tr>
+    <td>Know exactly where to improve</td>
+    <td>Paragraph-level scoring across Content, Language, Organisation (MOE 1184)</td>
+    <td>"Try it now — paste any essay and see the breakdown" (instant demo)</td>
+  </tr>
+  <tr>
+    <td>See what "good" looks like</td>
+    <td>AI model rewrite — same essay, improved version side-by-side</td>
+    <td>Screenshot of before/after rewrite in product demo</td>
+  </tr>
+  <tr>
+    <td>Track progress over time</td>
+    <td>Score history + trend charts on parent & student dashboards</td>
+    <td>Screenshot of progress chart with improving scores</td>
+  </tr>
+</table>
+
+<h3>C4. CTA Strategy</h3>
+<table>
+  <tr><th>CTA</th><th>Label</th><th>Placement</th><th>Target user</th></tr>
+  <tr>
+    <td>Primary</td>
+    <td><strong>"Try a sample essay — free"</strong></td>
+    <td>Hero section, sticky mobile bar</td>
+    <td>Everyone (zero commitment)</td>
+  </tr>
+  <tr>
+    <td>Secondary</td>
+    <td><strong>"Start free — 3 essays/month"</strong></td>
+    <td>Hero section (below primary), pricing section, end of page</td>
+    <td>Convinced parents ready to register</td>
+  </tr>
+  <tr>
+    <td>Tertiary</td>
+    <td>"See pricing"</td>
+    <td>Nav bar link (not button)</td>
+    <td>Price-sensitive comparison shoppers</td>
+  </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="d1">D1. Mockup 1 — Outcome-First / Trust-First</h2>
+<p><em>Strategy: Lead with the result, prove it's real, then show the product.</em></p>
+
+<h3>D1.1 Landing Page</h3>
+<pre>
+┌──────────────────────────────────────────────────────────┐
+│  [Logo: WriteRight]                    [Pricing] [Log in]│
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│   Better essays, better grades                           │
+│   — in minutes, not months                               │
+│                                                          │
+│   Instant AI feedback on English essays,                 │
+│   scored to Singapore's MOE marking scheme.              │
+│                                                          │
+│   [ Try a sample essay — free ]  (primary, blue)         │
+│   [ Start free — 3 essays/month ] (secondary, outline)   │
+│                                                          │
+├──────────────────────────────────────────────────────────┤
+│  SOCIAL PROOF BAR (only when real)                       │
+│  "Used by [N] students across [N] schools in Singapore"  │
+│  (Show real number, even if it's 47. Honesty builds      │
+│   trust. "47 students and growing" &gt; "thousands")        │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│  ┌─ HOW IT WORKS (3 steps) ──────────────────────────┐   │
+│  │                                                    │   │
+│  │  1. Submit        2. Get scored      3. Improve    │   │
+│  │  ┌──────────┐    ┌──────────┐     ┌──────────┐    │   │
+│  │  │ Paste or │    │ Content:B│     │ Original │    │   │
+│  │  │ write an │    │ Lang:  A │     │ vs Model │    │   │
+│  │  │ essay    │    │ Org:   B+│     │ Rewrite  │    │   │
+│  │  └──────────┘    └──────────┘     └──────────┘    │   │
+│  │  "Paste any       "Scored on       "See a better   │   │
+│  │   essay or         MOE 1184         version of     │   │
+│  │   start fresh"     criteria"        your essay"    │   │
+│  └────────────────────────────────────────────────────┘   │
+│                                                          │
+├──────────────────────────────────────────────────────────┤
+│  FOR PARENTS                        FOR STUDENTS         │
+│  ┌────────────────────┐    ┌────────────────────────┐    │
+│  │ • See your child's │    │ • Get feedback in 2min │    │
+│  │   scores improve   │    │ • Know what to fix     │    │
+│  │ • Costs less than  │    │ • Earn rewards for     │    │
+│  │   1 tuition session│    │   writing practice     │    │
+│  │ • Set assignments  │    │ • Track your streak    │    │
+│  │   in 30 seconds    │    │   and progress         │    │
+│  └────────────────────┘    └────────────────────────┘    │
+│                                                          │
+├──────────────────────────────────────────────────────────┤
+│  PRICING (inline, not separate page)                     │
+│  ┌──────────────┐  ┌──────────────────────┐              │
+│  │ Free         │  │ Plus — $14.90/mo     │              │
+│  │ 3 essays/mo  │  │ Unlimited essays     │              │
+│  │              │  │ Priority feedback    │              │
+│  │ [Start free] │  │ Progress analytics   │              │
+│  │              │  │ [Start free, upgrade │              │
+│  │              │  │  anytime]            │              │
+│  └──────────────┘  └──────────────────────┘              │
+│  "That's less than $1 per essay vs $60+/hr for tuition"  │
+│                                                          │
+├──────────────────────────────────────────────────────────┤
+│  FAQ (5-7 questions)                                     │
+│  ▸ How does the AI score essays?                         │
+│  ▸ Is it aligned to Singapore's MOE syllabus?            │
+│  ▸ Is my child's data safe?                              │
+│  ▸ Can I cancel anytime?                                 │
+│  ▸ What levels/grades does it support?                   │
+│                                                          │
+├──────────────────────────────────────────────────────────┤
+│  FOOTER                                                  │
+│  About · FAQ · Terms of Service · Privacy Policy         │
+│  Contact · © 2026 WriteRight SG                          │
+└──────────────────────────────────────────────────────────┘
+</pre>
+
+<h3>D1.2 Pricing Section</h3>
+<div class="callout callout-amber">
+  <strong>Recommendation: Inline pricing on landing page, not a separate route.</strong>
+  Parents comparison-shop in one session. Making them click to a separate page adds a drop-off point. Keep pricing visible on the main page with an anchor link from nav.
+</div>
+<pre>
+┌─────────────────────────────────────────────────────┐
+│              Choose your plan                        │
+│                                                      │
+│  ┌─────────────────┐   ┌─────────────────────────┐  │
+│  │     Free         │   │   ★ Plus — $14.90/mo    │  │
+│  │                  │   │                         │  │
+│  │  3 essays/month  │   │  Unlimited essays       │  │
+│  │  AI scoring      │   │  AI scoring             │  │
+│  │  Model rewrites  │   │  Model rewrites         │  │
+│  │  Basic progress  │   │  Full progress charts   │  │
+│  │                  │   │  Priority feedback       │  │
+│  │                  │   │  Rewards system          │  │
+│  │  [Start free]    │   │  [Start free, upgrade   │  │
+│  │                  │   │   anytime]               │  │
+│  └─────────────────┘   └─────────────────────────┘  │
+│                                                      │
+│  Both plans include:                                 │
+│  MOE-aligned scoring · Paragraph-level feedback ·    │
+│  Model rewrite · Secure data (hosted in SG)          │
+│                                                      │
+│  💡 $14.90/mo = the cost of one bowl of laksa.       │
+│     One tuition session = $60-120.                   │
+└─────────────────────────────────────────────────────┘
+</pre>
+
+<h3>D1.3 First-Run Onboarding</h3>
+<pre>
+STEP 1/3                              STEP 2/3
+┌────────────────────────┐           ┌────────────────────────┐
+│                        │           │                        │
+│  Welcome! Let's set up │           │  Pick a topic          │
+│  your first essay.     │           │  (or paste your own)   │
+│                        │           │                        │
+│  What level is your    │           │  ○ Narrative: "A day   │
+│  child in?             │           │    that changed me"    │
+│                        │           │  ○ Expository: "Should │
+│  ○ Sec 1               │           │    phones be banned?"  │
+│  ○ Sec 2               │           │  ○ Situational: Write  │
+│  ○ Sec 3               │           │    a formal letter     │
+│  ○ Sec 4/5             │           │  ○ ✏️ Custom topic     │
+│                        │           │                        │
+│         [Next →]       │           │         [Next →]       │
+└────────────────────────┘           └────────────────────────┘
+
+STEP 3/3
+┌────────────────────────────────────────────┐
+│                                            │
+│  Your child can now start writing!         │
+│                                            │
+│  Share this link with them:                │
+│  ┌──────────────────────────────────────┐  │
+│  │ writeright.sg/join/abc123  [Copy]    │  │
+│  └──────────────────────────────────────┘  │
+│                                            │
+│  Or they can log in and find it under      │
+│  "Write" in their dashboard.               │
+│                                            │
+│  [Go to dashboard →]                       │
+└────────────────────────────────────────────┘
+</pre>
+
+<h3>D1.4 Core App Shell</h3>
+<pre>
+┌──────────────────────────────────────────────────────────────┐
+│ [≡] WriteRight          🔔          [Avatar ▾]               │
+├──────────┬───────────────────────────────────────────────────┤
+│          │                                                   │
+│  🏠 Home │  STUDENT HOME                                     │
+│          │                                                   │
+│  ✏️ Write │  ┌─ Your Progress ──────────────────────────┐     │
+│          │  │  Score trend: 54 → 62 → 68 (↑14 pts)    │     │
+│  📋 Hist.│  │  ████████████████░░░░  68/100            │     │
+│          │  │  Essays written: 12  │  Streak: 4 days   │     │
+│  🏆 Rew. │  └──────────────────────────────────────────┘     │
+│          │                                                   │
+│          │  ┌─ Continue Writing ────────────────────────┐     │
+│          │  │  📝 "A day that changed my life"          │     │
+│          │  │     Due: 20 Feb · Draft saved · 234 words │     │
+│          │  │     [Continue writing →]                  │     │
+│          │  └──────────────────────────────────────────┘     │
+│          │                                                   │
+│          │  ┌─ Recent Feedback ─────────────────────────┐     │
+│          │  │  "Should phones be banned in schools?"    │     │
+│          │  │  Score: 68/100 · Content: B · Lang: B+    │     │
+│          │  │  [View feedback →]                        │     │
+│          │  └──────────────────────────────────────────┘     │
+│          │                                                   │
+│          │  🎯 Next milestone: Score 70+ to unlock          │
+│          │     "Essay Explorer" badge                        │
+│          │                                                   │
+└──────────┴───────────────────────────────────────────────────┘
+</pre>
+
+<h3>D1.5 Component Inventory</h3>
+<table>
+  <tr><th>Component</th><th>Used in</th><th>Build difficulty</th></tr>
+  <tr><td><code>ScoreCard</code> — score + breakdown + trend arrow</td><td>Home, History, Feedback view</td><td>Easy (exists partially)</td></tr>
+  <tr><td><code>ProgressBar</code> — visual score bar</td><td>Home, History</td><td>Easy</td></tr>
+  <tr><td><code>AssignmentCard</code> — title, due date, status, CTA</td><td>Write, Home, Parent Assignments</td><td>Easy (exists)</td></tr>
+  <tr><td><code>FeedbackPanel</code> — paragraph scores + tips + model rewrite</td><td>Submission detail</td><td>Medium (partial exists)</td></tr>
+  <tr><td><code>TopicPicker</code> — grid/list of topics with custom option</td><td>Onboarding, Create Assignment</td><td>Medium</td></tr>
+  <tr><td><code>PricingTable</code> — two-column plan comparison</td><td>Landing page, Settings/Billing</td><td>Easy</td></tr>
+  <tr><td><code>FAQAccordion</code> — expandable Q&A</td><td>Landing page</td><td>Easy</td></tr>
+  <tr><td><code>StepWizard</code> — numbered steps with progress</td><td>Onboarding</td><td>Easy</td></tr>
+  <tr><td><code>RewardsGrid</code> — achievements + trophies + wishlist tabs</td><td>Rewards page</td><td>Medium (merge 3 existing pages)</td></tr>
+  <tr><td><code>DemoEditor</code> — paste essay → get instant feedback (no auth)</td><td>Landing page</td><td>Hard (new, requires API route)</td></tr>
+</table>
+
+<h3>D1.6 UX Writing Examples</h3>
+<table>
+  <tr><th>Location</th><th>Current</th><th>V3 Proposed</th></tr>
+  <tr><td>Hero headline</td><td>"AI-Powered Essay Feedback"</td><td>"Better essays, better grades — in minutes, not months"</td></tr>
+  <tr><td>CTA button</td><td>"Get Started"</td><td>"Try a sample essay — free"</td></tr>
+  <tr><td>Empty state (no essays)</td><td>(none)</td><td>"No essays yet. Your first one takes 5 minutes — and you'll get instant feedback."</td></tr>
+  <tr><td>After submission</td><td>(loading)</td><td>"Scoring your essay… this takes about 30 seconds." → "Done! Here's your feedback."</td></tr>
+  <tr><td>Pricing anchor</td><td>"View Plans"</td><td>"Less than $1 per essay"</td></tr>
+  <tr><td>Student nav</td><td>"My Performance"</td><td>"Home"</td></tr>
+  <tr><td>Student nav</td><td>"Achievements / Wishlist / Trophy Case"</td><td>"Rewards"</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="d2">D2. Mockup 2 — Workflow-First / Product-Demo-First</h2>
+<p><em>Strategy: Show the product immediately. Let the UI sell itself.</em></p>
+
+<h3>D2.1 Landing Page</h3>
+<pre>
+┌──────────────────────────────────────────────────────────┐
+│  [Logo: WriteRight]                    [Pricing] [Log in]│
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│  See how your child's essay scores               ┌─────┐│
+│  — in under 2 minutes                            │     ││
+│                                                  │ APP ││
+│  ┌──────────────────────────────────────────┐    │SHOT ││
+│  │                                          │    │     ││
+│  │  LIVE DEMO: Paste an essay below         │    │score││
+│  │  ┌──────────────────────────────────┐    │    │feed-││
+│  │  │                                  │    │    │back ││
+│  │  │  [Type or paste essay here...]   │    │    │     ││
+│  │  │                                  │    │    └─────┘│
+│  │  │                                  │    │          │
+│  │  └──────────────────────────────────┘    │          │
+│  │                                          │          │
+│  │  [ Score this essay → ]                  │          │
+│  │                                          │          │
+│  └──────────────────────────────────────────┘          │
+│                                                          │
+│  No signup needed. Try it now.                           │
+│                                                          │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│  WHAT YOU GET                                            │
+│  ┌────────────┐  ┌────────────┐  ┌────────────────┐     │
+│  │ [screenshot│  │ [screenshot│  │ [screenshot    │     │
+│  │  of score  │  │  of para   │  │  of model      │     │
+│  │  breakdown]│  │  feedback] │  │  rewrite]      │     │
+│  ├────────────┤  ├────────────┤  ├────────────────┤     │
+│  │ MOE-aligned│  │ Paragraph  │  │ "Show me       │     │
+│  │ scoring    │  │ by paragraph│  │  better" model │     │
+│  │ in seconds │  │ feedback   │  │  rewrite       │     │
+│  └────────────┘  └────────────┘  └────────────────┘     │
+│                                                          │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│  PARENTS: Track progress         STUDENTS: Level up      │
+│  ┌─────────────────────────┐    ┌──────────────────────┐ │
+│  │ [screenshot of parent   │    │ [screenshot of       │ │
+│  │  dashboard with score   │    │  student home with   │ │
+│  │  trend going up]        │    │  streak + rewards]   │ │
+│  └─────────────────────────┘    └──────────────────────┘ │
+│                                                          │
+├──────────────────────────────────────────────────────────┤
+│  PRICING  (same as Mockup 1)                             │
+├──────────────────────────────────────────────────────────┤
+│  FAQ  (same as Mockup 1)                                 │
+├──────────────────────────────────────────────────────────┤
+│  FOOTER (same as Mockup 1)                               │
+└──────────────────────────────────────────────────────────┘
+</pre>
+
+<div class="callout callout-green">
+  <strong>Key difference from Mockup 1:</strong> The hero IS the product. Instead of describing what WriteRight does, visitors experience it. The live demo textarea is the first thing they interact with. This is higher-risk (requires building a public API endpoint) but dramatically higher conversion potential.
+</div>
+
+<h3>D2.2 Pricing</h3>
+<p>Same as Mockup 1 — inline on landing page. No changes needed. The pricing section is identical regardless of hero strategy.</p>
+
+<h3>D2.3 First-Run Onboarding</h3>
+<pre>
+IF user already tried demo (has essay in session):
+
+STEP 1/2                              STEP 2/2
+┌────────────────────────┐           ┌────────────────────────┐
+│                        │           │                        │
+│  Great — you've already│           │  ✅ Account created!   │
+│  seen the feedback!    │           │                        │
+│                        │           │  We saved your sample  │
+│  Create an account to  │           │  essay. It's in your   │
+│  save it and get 3     │           │  History now.          │
+│  free essays/month.    │           │                        │
+│                        │           │  [Create an assignment │
+│  Email: [___________]  │           │   for your child →]    │
+│  Password: [_________] │           │                        │
+│  I am a: ○ Parent      │           │  or [Explore the       │
+│          ○ Student     │           │      dashboard →]      │
+│                        │           │                        │
+│  [Create account →]    │           │                        │
+└────────────────────────┘           └────────────────────────┘
+
+IF user did NOT try demo: Same 3-step flow as Mockup 1.
+</pre>
+
+<h3>D2.4 Core App Shell</h3>
+<p>Identical to Mockup 1. The app shell doesn't change between landing page strategies — only the acquisition path differs.</p>
+
+<h3>D2.5 Component Inventory (additions beyond Mockup 1)</h3>
+<table>
+  <tr><th>Component</th><th>Used in</th><th>Build difficulty</th></tr>
+  <tr><td><code>DemoEditor</code> — textarea + "Score this essay" button, no auth required</td><td>Landing hero</td><td><strong>Hard</strong> — needs public API route with rate limiting, abuse prevention, session storage</td></tr>
+  <tr><td><code>DemoResultPanel</code> — shows score + feedback for demo essay</td><td>Landing page (below hero after submit)</td><td>Medium — reuse FeedbackPanel with read-only mode</td></tr>
+  <tr><td>All other components</td><td>Same as Mockup 1</td><td>Same</td></tr>
+</table>
+
+<h3>D2.6 UX Writing Examples</h3>
+<table>
+  <tr><th>Location</th><th>Copy</th></tr>
+  <tr><td>Hero headline</td><td>"See how your child's essay scores — in under 2 minutes"</td></tr>
+  <tr><td>Demo placeholder</td><td>"Paste any English essay here (150+ words)…"</td></tr>
+  <tr><td>Demo CTA</td><td>"Score this essay →"</td></tr>
+  <tr><td>Demo loading</td><td>"Reading your essay… scoring against MOE criteria… almost done."</td></tr>
+  <tr><td>Post-demo upsell</td><td>"Like what you see? Create a free account to save this and get 3 essays/month."</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2>Mockup Comparison</h2>
+<table>
+  <tr><th></th><th>Mockup 1: Outcome-First</th><th>Mockup 2: Workflow-First</th></tr>
+  <tr><td><strong>Hero</strong></td><td>Headline + CTA buttons</td><td>Live demo editor in hero</td></tr>
+  <tr><td><strong>First impression</strong></td><td>"This tool will help my kid"</td><td>"Wow, it actually works"</td></tr>
+  <tr><td><strong>Build effort</strong></td><td>Low — mostly copy + layout</td><td>High — needs public API + abuse controls</td></tr>
+  <tr><td><strong>Risk</strong></td><td>Low — standard SaaS pattern</td><td>Medium — demo quality must be excellent</td></tr>
+  <tr><td><strong>Conversion potential</strong></td><td>Good</td><td>Excellent (if demo quality is high)</td></tr>
+  <tr><td><strong>Time to ship</strong></td><td>1-2 weeks</td><td>3-4 weeks</td></tr>
+</table>
+
+<div class="callout callout-purple">
+  <strong>🦞 Recommendation: Ship Mockup 1 first, then upgrade to Mockup 2.</strong>
+  <p>Mockup 1 fixes all the critical trust and clarity problems immediately. It's a 1-2 week effort. Once it's live and converting, build the demo editor and swap in the Mockup 2 hero. This is additive — you don't throw away Mockup 1 work.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="e">E. Acceptance Criteria & Implementation Roadmap</h2>
+
+<h3>E1. Acceptance Criteria</h3>
+<table>
+  <tr><th>Criterion</th><th>Test</th><th>Pass condition</th></tr>
+  <tr>
+    <td>Value prop in 10 seconds</td>
+    <td>Show landing page to 3 parents for 10 seconds, ask "what does this do?"</td>
+    <td>All 3 mention "essay feedback" or "improve English writing"</td>
+  </tr>
+  <tr>
+    <td>First success in &lt;2 minutes</td>
+    <td>Time from landing page → seeing AI feedback on an essay</td>
+    <td>&lt;120 seconds (demo mode) or &lt;180 seconds (registered path)</td>
+  </tr>
+  <tr>
+    <td>Nav labels are task-based</td>
+    <td>Show student nav to a Sec 3 student, ask "where do you go to write an essay?"</td>
+    <td>Student points to "Write" without hesitation</td>
+  </tr>
+  <tr>
+    <td>Components are reusable</td>
+    <td>Count unique component types in implementation</td>
+    <td>≤12 bespoke components (see inventory above)</td>
+  </tr>
+  <tr>
+    <td>No fabricated claims</td>
+    <td>Audit all landing page copy</td>
+    <td>Zero unverifiable statistics, zero fake testimonials</td>
+  </tr>
+  <tr>
+    <td>Legal compliance</td>
+    <td>Check footer links</td>
+    <td>Terms of Service + Privacy Policy pages exist and are linked</td>
+  </tr>
+</table>
+
+<h3>E2. Implementation Order</h3>
+<table>
+  <tr><th>Phase</th><th>What</th><th>Effort</th><th>Impact</th></tr>
+  <tr>
+    <td><strong>Week 1</strong></td>
+    <td>
+      1. Remove fake testimonials + false claims<br>
+      2. New landing page copy (Mockup 1 hero + how-it-works + audience sections)<br>
+      3. Add FAQ section<br>
+      4. Add ToS + Privacy Policy links in footer
+    </td>
+    <td>3-4 days</td>
+    <td>🔴 Critical — fixes trust damage</td>
+  </tr>
+  <tr>
+    <td><strong>Week 2</strong></td>
+    <td>
+      5. Inline pricing on landing page<br>
+      6. Merge student nav: 8 items → 4 (Home, Write, History, Rewards)<br>
+      7. Merge parent nav: 6 items → 4 (Home, Assignments, Submissions, Rewards)<br>
+      8. Move Topics into assignment creation flow
+    </td>
+    <td>3-4 days</td>
+    <td>🟠 High — reduces confusion</td>
+  </tr>
+  <tr>
+    <td><strong>Week 3</strong></td>
+    <td>
+      9. Student Home redesign (progress card, continue writing, recent feedback)<br>
+      10. Parent Home redesign (child progress dashboard)<br>
+      11. Streamlined onboarding (3-step wizard)
+    </td>
+    <td>4-5 days</td>
+    <td>🟡 Medium — improves retention</td>
+  </tr>
+  <tr>
+    <td><strong>Week 4-5</strong></td>
+    <td>
+      12. Rewards page (merge Achievements + Trophy Case + Wishlist)<br>
+      13. Product screenshots for landing page<br>
+      14. Demo editor (Mockup 2 upgrade — optional)
+    </td>
+    <td>5-7 days</td>
+    <td>🟢 Nice-to-have — improves conversion</td>
+  </tr>
+</table>
+
+<div class="callout callout-green">
+  <strong>Total estimated effort: 3-4 weeks for full V3.</strong>
+  <p>Week 1 alone fixes the most damaging problems (fake claims, missing trust signals). You could ship Week 1 changes by Friday and see immediate improvement in parent confidence.</p>
+</div>
+
+<hr style="margin: 3rem 0;">
+<p style="text-align: center; color: var(--muted); font-size: 0.85rem;">
+  WriteRight SG V3 Redesign Proposal · Prepared by Similancao 🦞 · 18 Feb 2026<br>
+  For internal review only. Questions → Kenneth, Sebastian, or Sam.
+</p>
+
+</div>
+</body>
+</html>
