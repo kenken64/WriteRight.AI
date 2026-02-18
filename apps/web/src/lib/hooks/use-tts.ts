@@ -38,10 +38,15 @@ function chunkText(text: string): string[] {
   return chunks;
 }
 
+interface AudioChunk {
+  buffer: ArrayBuffer;
+  contentType: string;
+}
+
 async function fetchAudioChunk(
   text: string,
   useCase?: string,
-): Promise<ArrayBuffer> {
+): Promise<AudioChunk> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   const csrfToken = readCsrfToken();
   if (csrfToken) headers['x-csrf-token'] = csrfToken;
@@ -57,7 +62,15 @@ async function fetchAudioChunk(
     throw new Error(err.error || `TTS error: ${res.status}`);
   }
 
-  return res.arrayBuffer();
+  const contentType = res.headers.get('content-type') || 'audio/mpeg';
+
+  // Guard: make sure we actually got audio back, not HTML/JSON
+  if (!contentType.startsWith('audio/')) {
+    const body = await res.text();
+    throw new Error(`Expected audio response but got ${contentType}: ${body.slice(0, 200)}`);
+  }
+
+  return { buffer: await res.arrayBuffer(), contentType };
 }
 
 export function useTts(): UseTtsReturn {
@@ -105,23 +118,41 @@ export function useTts(): UseTtsReturn {
 
       try {
         const chunks = chunkText(text);
-        const audioBuffers: ArrayBuffer[] = [];
+        const audioChunks: AudioChunk[] = [];
 
         for (let i = 0; i < chunks.length; i++) {
           if (controller.signal.aborted) return;
-          audioBuffers.push(await fetchAudioChunk(chunks[i], useCase));
+          audioChunks.push(await fetchAudioChunk(chunks[i], useCase));
           setProgress((i + 1) / chunks.length * 0.5); // First 50% = loading
         }
 
         if (controller.signal.aborted) return;
 
-        // Concatenate all audio chunks into a single blob
-        const blob = new Blob(audioBuffers, { type: 'audio/mpeg' });
+        // Use the content type from the first chunk response
+        const mimeType = audioChunks[0]?.contentType ?? 'audio/mpeg';
+        const blob = new Blob(
+          audioChunks.map((c) => c.buffer),
+          { type: mimeType },
+        );
         const url = URL.createObjectURL(blob);
         objectUrlRef.current = url;
 
-        const audio = new Audio(url);
+        const audio = new Audio();
         audioRef.current = audio;
+
+        // Wait for the audio to be loadable before playing
+        await new Promise<void>((resolve, reject) => {
+          audio.addEventListener('canplaythrough', () => resolve(), { once: true });
+          audio.addEventListener('error', () => {
+            const code = audio.error?.code;
+            const msg = audio.error?.message || 'Unknown playback error';
+            reject(new Error(`Audio load failed (code ${code}): ${msg}`));
+          }, { once: true });
+          audio.src = url;
+          audio.load();
+        });
+
+        if (controller.signal.aborted) return;
 
         audio.addEventListener('timeupdate', () => {
           if (audio.duration > 0) {
@@ -132,11 +163,6 @@ export function useTts(): UseTtsReturn {
         audio.addEventListener('ended', () => {
           setStatus('idle');
           setProgress(0);
-        });
-
-        audio.addEventListener('error', () => {
-          setStatus('error');
-          setError('Audio playback failed');
         });
 
         await audio.play();
