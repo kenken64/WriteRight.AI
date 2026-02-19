@@ -99,10 +99,19 @@ export async function visionCompletion(
   const { model = MODEL_PRIMARY, maxTokens = 4096, tracking } = options;
   const reasoning = isReasoningModel(model);
 
-  const imageContent = imageUrls.map((url) => ({
-    type: "image_url" as const,
-    image_url: { url, detail: "high" as const },
-  }));
+  const fileContent = imageUrls.map((url) => {
+    // PDFs must use the "file" content type — "image_url" only supports images
+    if (url.startsWith("data:application/pdf")) {
+      return {
+        type: "file" as const,
+        file: { filename: "document.pdf", file_data: url },
+      };
+    }
+    return {
+      type: "image_url" as const,
+      image_url: { url, detail: "high" as const },
+    };
+  });
 
   const start = Date.now();
 
@@ -116,7 +125,7 @@ export async function visionCompletion(
         { role: "system", content: systemPrompt },
         {
           role: "user",
-          content: [...imageContent, { type: "text" as const, text: userPrompt }],
+          content: [...fileContent, { type: "text" as const, text: userPrompt }],
         },
       ],
     } as any);

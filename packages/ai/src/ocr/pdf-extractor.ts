@@ -52,11 +52,12 @@ export async function extractTextFromPdf(fileUrl: string): Promise<OcrResult> {
   }
 
   // Scanned/handwritten PDF — send to OpenAI vision for OCR
-  // OpenAI vision API can accept PDF URLs directly for processing
+  // Convert buffer to base64 data URL so visionCompletion sends it as "file" type (not "image_url")
+  const pdfBase64 = `data:application/pdf;base64,${buffer.toString("base64")}`;
   try {
     const text = await visionCompletion(
       OCR_SYSTEM_PROMPT,
-      [fileUrl],
+      [pdfBase64],
       `This is a scanned PDF with ${pdfData.numpages} page(s). Transcribe all handwritten text from every page. Output only the text.`,
       { model: MODEL_VISION, maxTokens: 4000 },
     );
