@@ -12,32 +12,42 @@ export async function GET(req: NextRequest) {
   const { page, pageSize } = parsePaginationParams(searchParams);
   const { from, to } = toSupabaseRange({ page, pageSize });
 
-  // If filtering by category, first find matching topic IDs, then filter assignments
+  // If filtering by category, find submissions via topic chain OR direct gallery_category
   let assignmentFilter: string[] | null = null;
+  let directCategoryIds: string[] | null = null;
   if (category) {
+    // Find submissions whose topic matches the category
     const { data: topics } = await supabase
       .from("topics")
       .select("id")
       .eq("category", category);
-    if (!topics || topics.length === 0) {
-      return NextResponse.json({ submissions: [], total: 0 });
-    }
-    const topicIds = topics.map((t) => t.id);
+    const topicIds = topics?.map((t) => t.id) ?? [];
 
-    const { data: assignments } = await supabase
-      .from("assignments")
+    if (topicIds.length > 0) {
+      const { data: assignments } = await supabase
+        .from("assignments")
+        .select("id")
+        .in("topic_id", topicIds);
+      assignmentFilter = assignments?.map((a) => a.id) ?? [];
+    }
+
+    // Also find submissions with a direct gallery_category override
+    const { data: directSubs } = await supabase
+      .from("submissions")
       .select("id")
-      .in("topic_id", topicIds);
-    if (!assignments || assignments.length === 0) {
+      .eq("gallery_category", category);
+    directCategoryIds = directSubs?.map((s) => s.id) ?? [];
+
+    // If neither path found results, return empty
+    if ((!assignmentFilter || assignmentFilter.length === 0) && directCategoryIds.length === 0) {
       return NextResponse.json({ submissions: [], total: 0 });
     }
-    assignmentFilter = assignments.map((a) => a.id);
   }
 
   let query = supabase
     .from("submissions")
     .select(
-      "id, status, image_refs, gallery_pdf_ref, created_at, assignment:assignments(id, prompt, essay_type, topic_id, student_id, topic:topics(id, source_text, category, generated_prompts), student:student_profiles(display_name))",
+      "id, status, image_refs, gallery_pdf_ref, gallery_category, created_at, assignment:assignments(id, prompt, essay_type, topic_id, student_id, topic:topics(id, source_text, category, generated_prompts), student:student_profiles(display_name))",
       { count: "exact" }
     )
     .in("status", ["evaluated", "ocr_complete"])
@@ -45,8 +55,18 @@ export async function GET(req: NextRequest) {
     .neq("image_refs", "{}")
     .order("created_at", { ascending: false });
 
-  if (assignmentFilter) {
-    query = query.in("assignment_id", assignmentFilter);
+  if (category) {
+    // Combine both filters: assignment-based OR direct gallery_category
+    const allAssignmentIds = assignmentFilter ?? [];
+    const allDirectIds = directCategoryIds ?? [];
+
+    if (allAssignmentIds.length > 0 && allDirectIds.length > 0) {
+      query = query.or(`assignment_id.in.(${allAssignmentIds.join(",")}),id.in.(${allDirectIds.join(",")})`);
+    } else if (allAssignmentIds.length > 0) {
+      query = query.in("assignment_id", allAssignmentIds);
+    } else {
+      query = query.in("id", allDirectIds);
+    }
   }
 
   query = query.range(from, to);

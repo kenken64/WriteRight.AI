@@ -19,47 +19,48 @@ const categoryFilters = [
   { label: 'Current Affairs', value: 'current_affairs' },
 ];
 
-interface TopicGroup {
-  topicId: string;
+interface CategoryGroup {
+  key: string;
   title: string;
   category: string | null;
   submissions: GallerySubmission[];
 }
 
-function groupByTopic(submissions: GallerySubmission[]): TopicGroup[] {
-  const groups = new Map<string, TopicGroup>();
+const categoryLabels: Record<string, string> = {
+  environment: 'Environment',
+  technology: 'Technology',
+  social_issues: 'Social Issues',
+  education: 'Education',
+  health: 'Health',
+  current_affairs: 'Current Affairs',
+};
+
+function groupByCategory(submissions: GallerySubmission[]): CategoryGroup[] {
+  const groups = new Map<string, CategoryGroup>();
 
   for (const sub of submissions) {
-    const topic = sub.assignment?.topic;
-    const topicId = topic?.id ?? '__uncategorized';
-    const existing = groups.get(topicId);
+    const category = sub.gallery_category ?? sub.assignment?.topic?.category ?? null;
+    const key = category ?? '__uncategorized';
+    const existing = groups.get(key);
 
     if (existing) {
       existing.submissions.push(sub);
     } else {
-      let title = 'Uncategorized';
-      if (topic) {
-        // Use first generated prompt as title, or source_text
-        const prompts = topic.generated_prompts as { prompts?: string[] } | null;
-        if (prompts?.prompts?.[0]) {
-          title = prompts.prompts[0];
-        } else if (topic.source_text) {
-          title = topic.source_text.length > 100
-            ? topic.source_text.slice(0, 100) + '...'
-            : topic.source_text;
-        }
-      }
-
-      groups.set(topicId, {
-        topicId,
-        title,
-        category: topic?.category ?? null,
+      groups.set(key, {
+        key,
+        title: category ? (categoryLabels[category] ?? category.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())) : 'Uncategorized',
+        category,
         submissions: [sub],
       });
     }
   }
 
-  return Array.from(groups.values());
+  // Sort: named categories first (alphabetically), uncategorized last
+  return Array.from(groups.values()).sort((a, b) => {
+    if (!a.category) return 1;
+    if (!b.category) return -1;
+    return a.title.localeCompare(b.title);
+  });
 }
 
 export default function GalleryPage() {
@@ -82,7 +83,7 @@ export default function GalleryPage() {
   const totalPages = computeTotalPages(total, DEFAULT_PAGE_SIZE);
 
   const groups = useMemo(
-    () => (submissions ? groupByTopic(submissions) : []),
+    () => (submissions ? groupByCategory(submissions) : []),
     [submissions],
   );
 
@@ -93,7 +94,7 @@ export default function GalleryPage() {
     <div>
       <h1 className="text-2xl font-bold md:text-3xl">Essay Gallery</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Browse completed essays grouped by topic
+        Browse completed essays grouped by category
       </p>
 
       {/* Category filter pills */}
@@ -141,7 +142,7 @@ export default function GalleryPage() {
       <div className="mt-6 space-y-4">
         {groups.map((group, idx) => (
           <TopicGroupCard
-            key={group.topicId}
+            key={group.key}
             title={group.title}
             category={group.category}
             submissions={group.submissions}

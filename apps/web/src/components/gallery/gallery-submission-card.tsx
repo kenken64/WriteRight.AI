@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { formatRelativeDate, formatStatus } from '@/lib/utils/format';
 import { PdfDownloadButton } from './pdf-download-button';
+import { CategorySelect } from './category-select';
 import type { GallerySubmission } from '@/lib/api/client';
 
 interface GallerySubmissionCardProps {
@@ -36,11 +37,17 @@ export function GallerySubmissionCard({ submission, showStudentName }: GallerySu
           </span>
         </div>
       </Link>
-      <PdfDownloadButton
-        submissionId={submission.id}
-        imageRefs={submission.image_refs}
-        galleryPdfRef={submission.gallery_pdf_ref}
-      />
+      <div className="flex shrink-0 items-center gap-2">
+        <CategorySelect
+          submissionId={submission.id}
+          currentCategory={submission.gallery_category}
+        />
+        <PdfDownloadButton
+          submissionId={submission.id}
+          imageRefs={submission.image_refs}
+          galleryPdfRef={submission.gallery_pdf_ref}
+        />
+      </div>
     </div>
   );
 }

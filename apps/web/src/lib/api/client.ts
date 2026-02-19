@@ -601,6 +601,7 @@ export interface GallerySubmission {
   status: string;
   image_refs: string[] | null;
   gallery_pdf_ref: string | null;
+  gallery_category: string | null;
   created_at: string;
   assignment: {
     id: string;
@@ -650,6 +651,18 @@ export function useGenerateGalleryPdf() {
       }
       return res.blob();
     },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['gallery'] }),
+  });
+}
+
+export function useUpdateGalleryCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { submissionId: string; category: string | null }) =>
+      apiFetch<{ submission: { id: string; gallery_category: string | null } }>('/gallery/category', {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['gallery'] }),
   });
 }
