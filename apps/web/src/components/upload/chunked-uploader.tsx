@@ -7,6 +7,10 @@ import { createClient } from '@/lib/supabase/client';
 const ACCEPTED_TYPES =
   'image/jpeg,image/png,image/heif,image/heic,application/pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
+const MAX_FILE_SIZE_MB = 20;
+const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
+const MAX_RETRIES = 2;
+
 function getFileTypeIcon(file: File) {
   if (file.type === 'application/pdf') return <FileText className="h-5 w-5 text-red-500" />;
   if (
@@ -15,6 +19,33 @@ function getFileTypeIcon(file: File) {
   )
     return <FileIcon className="h-5 w-5 text-blue-500" />;
   return <Image className="h-5 w-5 text-green-500" />;
+}
+
+function sanitizeFileName(name: string): string {
+  const ext = name.lastIndexOf('.') >= 0 ? name.slice(name.lastIndexOf('.')) : '';
+  const base = name.slice(0, name.length - ext.length);
+  return base.replace(/[^a-zA-Z0-9_-]/g, '_') + ext.toLowerCase();
+}
+
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getContentType(file: File): string {
+  if (file.type) return file.type;
+  const ext = file.name.split('.').pop()?.toLowerCase();
+  const mimeMap: Record<string, string> = {
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    heif: 'image/heif',
+    heic: 'image/heic',
+    pdf: 'application/pdf',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  };
+  return mimeMap[ext ?? ''] ?? 'application/octet-stream';
 }
 
 interface ChunkedUploaderProps {
@@ -39,11 +70,17 @@ export function ChunkedUploader({ assignmentId, maxImages, onComplete }: Chunked
   const addFiles = useCallback(
     (incoming: File[]) => {
       const selected = incoming.slice(0, maxImages - files.length);
-      const newFiles: UploadFile[] = selected.map((file) => ({
-        file,
-        progress: 0,
-        status: 'pending',
-      }));
+      const newFiles: UploadFile[] = selected.map((file) => {
+        if (file.size > MAX_FILE_SIZE) {
+          return {
+            file,
+            progress: 0,
+            status: 'error' as const,
+            error: `File too large (${formatSize(file.size)}). Max ${MAX_FILE_SIZE_MB} MB.`,
+          };
+        }
+        return { file, progress: 0, status: 'pending' as const };
+      });
       setFiles((prev) => [...prev, ...newFiles]);
     },
     [files.length, maxImages],
@@ -72,35 +109,60 @@ export function ChunkedUploader({ assignmentId, maxImages, onComplete }: Chunked
   const uploadAll = async () => {
     const supabase = createClient();
     setUploading(true);
+
+    // Refresh session before uploading (prevents stale tokens on mobile)
+    await supabase.auth.getSession();
+
     setFiles((prev) =>
-      prev.map((f) => ({ ...f, status: 'uploading' as const, progress: 0 })),
+      prev.map((f) =>
+        f.status === 'error' ? f : { ...f, status: 'uploading' as const, progress: 0 },
+      ),
     );
 
     const refs: string[] = [];
 
     for (let i = 0; i < files.length; i++) {
       const f = files[i];
+      if (f.status === 'error') continue; // skip files that failed validation
+
       const timestamp = Date.now();
-      const path = `${assignmentId}/${timestamp}-${f.file.name}`;
+      const safeName = sanitizeFileName(f.file.name);
+      const path = `${assignmentId}/${timestamp}-${safeName}`;
+      const contentType = getContentType(f.file);
 
-      try {
-        const { error } = await supabase.storage
-          .from('submissions')
-          .upload(path, f.file);
+      let uploaded = false;
+      let lastError: string = '';
 
-        if (error) throw error;
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          const { error } = await supabase.storage
+            .from('submissions')
+            .upload(path, f.file, { contentType, upsert: true });
 
-        refs.push(path);
-        setFiles((prev) =>
-          prev.map((item, idx) =>
-            idx === i ? { ...item, progress: 100, status: 'complete' as const } : item,
-          ),
-        );
-      } catch (err) {
+          if (error) throw error;
+
+          uploaded = true;
+          refs.push(path);
+          setFiles((prev) =>
+            prev.map((item, idx) =>
+              idx === i ? { ...item, progress: 100, status: 'complete' as const } : item,
+            ),
+          );
+          break;
+        } catch (err) {
+          lastError = (err as Error).message || 'Upload failed';
+          if (attempt < MAX_RETRIES) {
+            // Wait before retrying (exponential backoff: 1s, 2s)
+            await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+          }
+        }
+      }
+
+      if (!uploaded) {
         setFiles((prev) =>
           prev.map((item, idx) =>
             idx === i
-              ? { ...item, progress: 0, status: 'error' as const, error: (err as Error).message }
+              ? { ...item, progress: 0, status: 'error' as const, error: lastError }
               : item,
           ),
         );
@@ -113,6 +175,8 @@ export function ChunkedUploader({ assignmentId, maxImages, onComplete }: Chunked
       onComplete(refs);
     }
   };
+
+  const pendingCount = files.filter((f) => f.status === 'pending' || f.status === 'uploading').length;
 
   return (
     <div className="space-y-4">
@@ -129,7 +193,7 @@ export function ChunkedUploader({ assignmentId, maxImages, onComplete }: Chunked
           Drag and drop files or click to browse
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Images (JPEG, PNG, HEIF), PDF, or Word (.docx) · Max {maxImages} files
+          Images (JPEG, PNG, HEIF), PDF, or Word (.docx) · Max {maxImages} files, {MAX_FILE_SIZE_MB} MB each
         </p>
         <span className="mt-3 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-white">
           Browse Files
@@ -150,7 +214,8 @@ export function ChunkedUploader({ assignmentId, maxImages, onComplete }: Chunked
             <div key={i} className="flex items-center gap-3 rounded-md border p-3">
               {getFileTypeIcon(f.file)}
               <div className="flex-1">
-                <p className="text-sm font-medium">{f.file.name}</p>
+                <p className="text-sm font-medium truncate">{f.file.name}</p>
+                <p className="text-xs text-muted-foreground">{formatSize(f.file.size)}</p>
                 {f.status === 'error' && (
                   <p className="text-xs text-red-500">{f.error}</p>
                 )}
@@ -170,13 +235,15 @@ export function ChunkedUploader({ assignmentId, maxImages, onComplete }: Chunked
               )}
             </div>
           ))}
-          <button
-            onClick={uploadAll}
-            disabled={uploading}
-            className="w-full rounded-md bg-primary py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
-          >
-            {uploading ? 'Uploading...' : `Upload ${files.length} file${files.length > 1 ? 's' : ''}`}
-          </button>
+          {pendingCount > 0 && (
+            <button
+              onClick={uploadAll}
+              disabled={uploading}
+              className="w-full rounded-md bg-primary py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+            >
+              {uploading ? 'Uploading...' : `Upload ${pendingCount} file${pendingCount > 1 ? 's' : ''}`}
+            </button>
+          )}
         </div>
       )}
     </div>

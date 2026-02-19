@@ -14,7 +14,7 @@ export default async function SubmissionDetailPage({ params }: Props) {
   const supabase = await createServerSupabaseClient();
   const { data: submission } = await supabase
     .from('submissions')
-    .select('*, assignment:assignments(prompt, essay_type, essay_sub_type)')
+    .select('*, assignment:assignments(prompt, essay_type, essay_sub_type, student:student_profiles(display_name))')
     .eq('id', id)
     .single();
 
@@ -46,6 +46,20 @@ export default async function SubmissionDetailPage({ params }: Props) {
       <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <h1 className="text-2xl font-bold md:text-3xl">Submission</h1>
         <span className={`rounded-full px-3 py-1 text-sm ${status.color}`}>{status.label}</span>
+      </div>
+
+      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+        <span>ID: {id.slice(0, 8)}</span>
+        {submission.assignment?.student?.display_name && (
+          <span>Submitted by: {submission.assignment.student.display_name}</span>
+        )}
+        <span>
+          {new Date(submission.created_at).toLocaleDateString('en-SG', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+          })}
+        </span>
       </div>
 
       {statusDescription && (
