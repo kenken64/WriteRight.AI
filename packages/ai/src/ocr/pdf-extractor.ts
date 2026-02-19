@@ -28,11 +28,12 @@ export async function extractTextFromPdf(fileUrl: string): Promise<OcrResult> {
   const buffer = Buffer.from(await response.arrayBuffer());
 
   // Step 2: Convert each PDF page to a PNG image
-  // Dynamic import because pdf-to-img is ESM-only
+  // Pass as data URL string to avoid path.dirname() issue in bundled Next.js
+  const pdfDataUrl = `data:application/pdf;base64,${buffer.toString("base64")}`;
   const { pdf } = await import("pdf-to-img");
   let pageImages: Buffer[];
   try {
-    const document = await pdf(buffer, { scale: 2.0 });
+    const document = await pdf(pdfDataUrl, { scale: 2.0 });
     pageImages = [];
     for await (const image of document) {
       pageImages.push(image);
