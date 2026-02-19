@@ -7,7 +7,7 @@ import { getNavForRole, type UserRole } from '@/lib/utils/roles';
 import { useSidebar } from './sidebar-context';
 import {
   ClipboardList, FileText, Lightbulb, Trophy, Star, Medal,
-  Gift, BarChart3, Settings, LogOut, Menu, X, PenTool,
+  Gift, BarChart3, Settings, LogOut, Menu, X, PenTool, Images,
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = {
@@ -21,6 +21,7 @@ const iconMap: Record<string, React.ElementType> = {
   'bar-chart-3': BarChart3,
   'settings': Settings,
   'pen-tool': PenTool,
+  'images': Images,
 };
 
 interface LinkedMember {

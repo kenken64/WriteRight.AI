@@ -15,6 +15,7 @@ export interface NavItem {
 const parentNav: NavItem[] = [
   { label: 'Assignments', href: '/assignments', icon: 'clipboard-list' },
   { label: 'Submissions', href: '/submissions', icon: 'file-text' },
+  { label: 'Gallery', href: '/gallery', icon: 'images' },
   { label: 'Topics', href: '/topics', icon: 'lightbulb' },
   { label: 'Rewards', href: '/rewards', icon: 'gift' },
   { label: 'Analytics', href: '/analytics', icon: 'bar-chart-3' },
@@ -25,6 +26,7 @@ const studentNav: NavItem[] = [
   { label: 'My Performance', href: '/performance', icon: 'bar-chart-3' },
   { label: 'Assignments', href: '/assignments', icon: 'clipboard-list' },
   { label: 'Submissions', href: '/submissions', icon: 'file-text' },
+  { label: 'Gallery', href: '/gallery', icon: 'images' },
   { label: 'Topics', href: '/topics', icon: 'lightbulb' },
   { label: 'Achievements', href: '/achievements', icon: 'trophy' },
   { label: 'Wishlist', href: '/wishlist', icon: 'star' },

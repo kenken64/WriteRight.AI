@@ -506,3 +506,49 @@ export function useDeleteNote() {
     },
   });
 }
+
+// ─── Gallery ───
+export interface GallerySubmission {
+  id: string;
+  status: string;
+  image_refs: string[] | null;
+  gallery_pdf_ref: string | null;
+  created_at: string;
+  assignment: {
+    id: string;
+    prompt: string;
+    essay_type: string;
+    topic_id: string | null;
+    student_id: string;
+    topic: {
+      id: string;
+      source_text: string | null;
+      category: string | null;
+      generated_prompts: unknown;
+    } | null;
+    student: {
+      display_name: string;
+    } | null;
+  } | null;
+}
+
+export function useGallery(filters?: { category?: string }, page = 1, pageSize = 10) {
+  const params = new URLSearchParams({
+    ...(filters as Record<string, string>),
+    page: String(page),
+    pageSize: String(pageSize),
+  }).toString();
+  return useQuery({
+    queryKey: ['gallery', filters, page, pageSize],
+    queryFn: () => apiFetch<{ submissions: GallerySubmission[]; total: number }>(`/gallery?${params}`),
+  });
+}
+
+export function useGenerateGalleryPdf() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (submissionId: string) =>
+      apiFetch<{ url: string }>(`/gallery/${submissionId}/pdf`, { method: 'POST' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['gallery'] }),
+  });
+}
