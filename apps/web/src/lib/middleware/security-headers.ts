@@ -9,6 +9,7 @@ const CSP = [
   "img-src 'self' blob: data: https:",
   "media-src 'self' blob:",
   "font-src 'self'",
+  "object-src 'self' https://*.supabase.co",
   "frame-src 'self' https://*.supabase.co",
   "connect-src 'self' https://*.supabase.co https://api.openai.com https://api.stripe.com",
 ].join('; ');

@@ -131,12 +131,21 @@ export function OcrSection({ submissionId, text, imageUrls }: OcrSectionProps) {
               // malformed URL — treat as image
             }
             return isPdf ? (
-              <iframe
-                key={i}
-                src={url}
-                title={`Original handwritten page ${i + 1}`}
-                className="w-full min-h-[600px] rounded-md border"
-              />
+              <div key={i} className="flex flex-col gap-2">
+                <iframe
+                  src={url}
+                  title={`Original handwritten page ${i + 1}`}
+                  className="hidden md:block w-full min-h-[600px] rounded-md border"
+                />
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="md:hidden flex items-center justify-center gap-2 rounded-md border bg-muted px-4 py-3 text-sm font-medium hover:bg-muted/80 transition-colors"
+                >
+                  Open PDF in new tab
+                </a>
+              </div>
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
               <img
