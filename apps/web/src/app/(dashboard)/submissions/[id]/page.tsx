@@ -3,6 +3,7 @@ import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/sup
 import { notFound } from 'next/navigation';
 import { formatStatus, formatConfidence, getStatusDescription } from '@/lib/utils/format';
 import { OcrSection } from '@/components/submission/ocr-section';
+import { OcrSectionWithHighlights } from '@/components/submission/ocr-section-with-highlights';
 import { ReEvaluateButton } from '@/components/submission/re-evaluate-button';
 import { ChatPanel } from '@/components/submission/chat-panel';
 import { StudentNotesPanel } from '@/components/submission/student-notes-panel';
@@ -103,11 +104,19 @@ export default async function SubmissionDetailPage({ params }: Props) {
               </span>
             )}
           </div>
-          <OcrSection
-            submissionId={id}
-            text={submission.ocr_text}
-            imageUrls={imageUrls}
-          />
+          {userRole === 'student' ? (
+            <OcrSectionWithHighlights
+              submissionId={id}
+              text={submission.ocr_text}
+              imageUrls={imageUrls}
+            />
+          ) : (
+            <OcrSection
+              submissionId={id}
+              text={submission.ocr_text}
+              imageUrls={imageUrls}
+            />
+          )}
         </div>
       ) : submission.status === 'evaluated' && (
         <div className="mt-6 rounded-lg border bg-white p-6">

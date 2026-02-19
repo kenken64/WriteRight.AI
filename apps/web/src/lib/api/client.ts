@@ -507,6 +507,85 @@ export function useDeleteNote() {
   });
 }
 
+// ─── Student Highlights ───
+export type HighlightColor = 'yellow' | 'green' | 'blue' | 'pink' | 'orange';
+
+export interface StudentHighlight {
+  id: string;
+  submission_id: string;
+  student_id: string;
+  highlighted_text: string;
+  color: HighlightColor;
+  occurrence_index: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useStudentHighlights(submissionId: string) {
+  return useQuery({
+    queryKey: ['student-highlights', submissionId],
+    queryFn: () =>
+      apiFetch<{ highlights: StudentHighlight[] }>(`/submissions/${submissionId}/highlights`).then(
+        (res) => res.highlights,
+      ),
+    enabled: !!submissionId,
+  });
+}
+
+export function useCreateHighlight() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      submissionId: string;
+      highlighted_text: string;
+      color: HighlightColor;
+      occurrence_index: number;
+    }) =>
+      apiFetch<{ highlight: StudentHighlight }>(`/submissions/${data.submissionId}/highlights`, {
+        method: 'POST',
+        body: JSON.stringify({
+          highlighted_text: data.highlighted_text,
+          color: data.color,
+          occurrence_index: data.occurrence_index,
+        }),
+      }),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ['student-highlights', variables.submissionId] });
+    },
+  });
+}
+
+export function useUpdateHighlight() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { submissionId: string; highlightId: string; color: HighlightColor }) =>
+      apiFetch<{ highlight: StudentHighlight }>(
+        `/submissions/${data.submissionId}/highlights/${data.highlightId}`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ color: data.color }),
+        },
+      ),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ['student-highlights', variables.submissionId] });
+    },
+  });
+}
+
+export function useDeleteHighlight() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { submissionId: string; highlightId: string }) =>
+      apiFetch<{ success: boolean }>(
+        `/submissions/${data.submissionId}/highlights/${data.highlightId}`,
+        { method: 'DELETE' },
+      ),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ['student-highlights', variables.submissionId] });
+    },
+  });
+}
+
 // ─── Gallery ───
 export interface GallerySubmission {
   id: string;

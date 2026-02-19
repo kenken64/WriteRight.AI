@@ -5,18 +5,23 @@ import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import { OcrTextDisplay, stripCodeBlocks } from './ocr-text-display';
+import { HighlightableText, type TextSelection } from './highlightable-text';
 import { readCsrfToken } from '@/lib/hooks/use-csrf-token';
+import type { StudentHighlight } from '@/lib/api/client';
 
 interface OcrSectionProps {
   submissionId: string;
   text: string;
   imageUrls: string[];
+  highlights?: StudentHighlight[];
+  onTextSelected?: (selection: TextSelection) => void;
+  isStudentView?: boolean;
 }
 
 const tabs = ['Text', 'Original'] as const;
 type Tab = (typeof tabs)[number];
 
-export function OcrSection({ submissionId, text, imageUrls }: OcrSectionProps) {
+export function OcrSection({ submissionId, text, imageUrls, highlights, onTextSelected, isStudentView }: OcrSectionProps) {
   const [active, setActive] = useState<Tab>('Text');
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(text);
@@ -106,7 +111,17 @@ export function OcrSection({ submissionId, text, imageUrls }: OcrSectionProps) {
       </div>
 
       {/* Tab content */}
-      {active === 'Text' && !editing && <OcrTextDisplay text={displayText} />}
+      {active === 'Text' && !editing && (
+        isStudentView && highlights ? (
+          <HighlightableText
+            text={displayText}
+            highlights={highlights}
+            onTextSelected={onTextSelected}
+          />
+        ) : (
+          <OcrTextDisplay text={displayText} />
+        )
+      )}
 
       {active === 'Text' && editing && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

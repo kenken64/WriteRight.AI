@@ -7,6 +7,10 @@ import {
   useCreateNote,
   useUpdateNote,
   useDeleteNote,
+  useStudentHighlights,
+  useDeleteHighlight,
+  type StudentHighlight,
+  type HighlightColor,
 } from '@/lib/api/client';
 
 interface StudentNotesPanelProps {
@@ -21,6 +25,14 @@ const PRIORITY_CONFIG = {
 
 type Priority = keyof typeof PRIORITY_CONFIG;
 
+const HIGHLIGHT_COLOR_CONFIG: Record<HighlightColor, { label: string; swatch: string }> = {
+  yellow: { label: 'Yellow', swatch: 'bg-yellow-200' },
+  green: { label: 'Green', swatch: 'bg-green-200' },
+  blue: { label: 'Blue', swatch: 'bg-blue-200' },
+  pink: { label: 'Pink', swatch: 'bg-pink-200' },
+  orange: { label: 'Orange', swatch: 'bg-orange-200' },
+};
+
 export function StudentNotesPanel({ submissionId }: StudentNotesPanelProps) {
   const [showForm, setShowForm] = useState(false);
   const [newContent, setNewContent] = useState('');
@@ -29,6 +41,8 @@ export function StudentNotesPanel({ submissionId }: StudentNotesPanelProps) {
   const createNote = useCreateNote();
   const updateNote = useUpdateNote();
   const deleteNote = useDeleteNote();
+  const { data: highlights = [] } = useStudentHighlights(submissionId);
+  const deleteHighlight = useDeleteHighlight();
 
   const incompleteCount = notes.filter((n) => !n.is_done).length;
 
@@ -61,6 +75,16 @@ export function StudentNotesPanel({ submissionId }: StudentNotesPanelProps) {
   const handleDelete = (noteId: string) => {
     deleteNote.mutate({ submissionId, noteId });
   };
+
+  const handleDeleteHighlight = (highlightId: string) => {
+    deleteHighlight.mutate({ submissionId, highlightId });
+  };
+
+  // Group highlights by color
+  const highlightsByColor = highlights.reduce<Record<string, StudentHighlight[]>>((acc, h) => {
+    (acc[h.color] ??= []).push(h);
+    return acc;
+  }, {});
 
   return (
     <div className="mt-6 rounded-lg border bg-white p-4">
@@ -183,6 +207,45 @@ export function StudentNotesPanel({ submissionId }: StudentNotesPanelProps) {
               </button>
             </div>
           ))}
+        </div>
+      )}
+
+      {highlights.length > 0 && (
+        <div className="mt-4 border-t pt-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="h-4 w-4 rounded bg-yellow-200 border border-gray-300" />
+            <span className="font-medium text-sm">Highlights</span>
+            <span className="text-xs text-muted-foreground">{highlights.length}</span>
+          </div>
+          <div className="space-y-3">
+            {(Object.keys(HIGHLIGHT_COLOR_CONFIG) as HighlightColor[])
+              .filter((color) => highlightsByColor[color]?.length)
+              .map((color) => (
+                <div key={color}>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <div className={`h-3 w-3 rounded-full ${HIGHLIGHT_COLOR_CONFIG[color].swatch} border border-gray-300`} />
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {HIGHLIGHT_COLOR_CONFIG[color].label}
+                    </span>
+                  </div>
+                  <div className="space-y-1 pl-4">
+                    {highlightsByColor[color].map((h) => (
+                      <div key={h.id} className="flex items-start gap-1.5 group">
+                        <p className="flex-1 min-w-0 text-xs text-muted-foreground line-clamp-2 italic">
+                          &ldquo;{h.highlighted_text}&rdquo;
+                        </p>
+                        <button
+                          onClick={() => handleDeleteHighlight(h.id)}
+                          className="shrink-0 rounded p-0.5 text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-500 transition-all"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+          </div>
         </div>
       )}
     </div>
