@@ -393,3 +393,116 @@ export function useLinkedStudents() {
       apiFetch<{ students: { id: string; displayName: string; level: string }[] }>('/linked-students'),
   });
 }
+
+// ─── Submission Messages ───
+export interface SubmissionMessage {
+  id: string;
+  submission_id: string;
+  sender_id: string;
+  content: string;
+  created_at: string;
+  sender: { display_name: string; role: string } | null;
+}
+
+export function useSubmissionMessages(submissionId: string) {
+  return useQuery({
+    queryKey: ['submission-messages', submissionId],
+    queryFn: () =>
+      apiFetch<{ messages: SubmissionMessage[] }>(`/submissions/${submissionId}/messages`).then(
+        (res) => res.messages,
+      ),
+    enabled: !!submissionId,
+  });
+}
+
+export function useSendMessage() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { submissionId: string; content: string }) =>
+      apiFetch<{ message: SubmissionMessage }>(`/submissions/${data.submissionId}/messages`, {
+        method: 'POST',
+        body: JSON.stringify({ content: data.content }),
+      }),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ['submission-messages', variables.submissionId] });
+    },
+  });
+}
+
+// ─── Student Notes ───
+export interface StudentNote {
+  id: string;
+  submission_id: string;
+  student_id: string;
+  content: string;
+  priority: 'high' | 'medium' | 'low';
+  is_done: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useStudentNotes(submissionId: string) {
+  return useQuery({
+    queryKey: ['student-notes', submissionId],
+    queryFn: () =>
+      apiFetch<{ notes: StudentNote[] }>(`/submissions/${submissionId}/notes`).then(
+        (res) => res.notes,
+      ),
+    enabled: !!submissionId,
+  });
+}
+
+export function useCreateNote() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { submissionId: string; content: string; priority: string }) =>
+      apiFetch<{ note: StudentNote }>(`/submissions/${data.submissionId}/notes`, {
+        method: 'POST',
+        body: JSON.stringify({ content: data.content, priority: data.priority }),
+      }),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ['student-notes', variables.submissionId] });
+    },
+  });
+}
+
+export function useUpdateNote() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      submissionId: string;
+      noteId: string;
+      content?: string;
+      priority?: string;
+      is_done?: boolean;
+    }) =>
+      apiFetch<{ note: StudentNote }>(
+        `/submissions/${data.submissionId}/notes/${data.noteId}`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({
+            ...(data.content !== undefined && { content: data.content }),
+            ...(data.priority !== undefined && { priority: data.priority }),
+            ...(data.is_done !== undefined && { is_done: data.is_done }),
+          }),
+        },
+      ),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ['student-notes', variables.submissionId] });
+    },
+  });
+}
+
+export function useDeleteNote() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { submissionId: string; noteId: string }) =>
+      apiFetch<{ success: boolean }>(
+        `/submissions/${data.submissionId}/notes/${data.noteId}`,
+        { method: 'DELETE' },
+      ),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ['student-notes', variables.submissionId] });
+    },
+  });
+}

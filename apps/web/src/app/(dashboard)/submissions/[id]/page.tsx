@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { formatStatus, formatConfidence, getStatusDescription } from '@/lib/utils/format';
 import { OcrSection } from '@/components/submission/ocr-section';
 import { ReEvaluateButton } from '@/components/submission/re-evaluate-button';
+import { ChatPanel } from '@/components/submission/chat-panel';
+import { StudentNotesPanel } from '@/components/submission/student-notes-panel';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -12,6 +14,19 @@ interface Props {
 export default async function SubmissionDetailPage({ params }: Props) {
   const { id } = await params;
   const supabase = await createServerSupabaseClient();
+
+  // Get current user and role for chat/notes visibility
+  const { data: { user } } = await supabase.auth.getUser();
+  let userRole: string | null = null;
+  if (user) {
+    const { data: userData } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    userRole = userData?.role ?? null;
+  }
+
   const { data: submission } = await supabase
     .from('submissions')
     .select('*, assignment:assignments(prompt, essay_type, essay_sub_type, student:student_profiles(display_name))')
@@ -54,10 +69,13 @@ export default async function SubmissionDetailPage({ params }: Props) {
           <span>Submitted by: {submission.assignment.student.display_name}</span>
         )}
         <span>
-          {new Date(submission.created_at).toLocaleDateString('en-SG', {
+          {new Date(submission.created_at).toLocaleString('en-SG', {
             day: 'numeric',
             month: 'short',
             year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
           })}
         </span>
       </div>
@@ -73,7 +91,7 @@ export default async function SubmissionDetailPage({ params }: Props) {
         </p>
       </div>
 
-      {submission.ocr_text && (
+      {submission.ocr_text ? (
         <div className="mt-6 rounded-lg border bg-white p-6">
           <div className="flex items-center justify-between">
             <h2 className="font-medium">Extracted Text</h2>
@@ -88,6 +106,13 @@ export default async function SubmissionDetailPage({ params }: Props) {
             text={submission.ocr_text}
             imageUrls={imageUrls}
           />
+        </div>
+      ) : submission.status === 'evaluated' && (
+        <div className="mt-6 rounded-lg border bg-white p-6">
+          <h2 className="font-medium">Extracted Text</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Text extraction not available for this submission.
+          </p>
         </div>
       )}
 
@@ -109,6 +134,10 @@ export default async function SubmissionDetailPage({ params }: Props) {
           </Link>
         </div>
       )}
+
+      {user && <ChatPanel submissionId={id} currentUserId={user.id} />}
+
+      {user && userRole === 'student' && <StudentNotesPanel submissionId={id} />}
     </div>
   );
 }
