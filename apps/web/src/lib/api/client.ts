@@ -517,6 +517,7 @@ export interface StudentHighlight {
   highlighted_text: string;
   color: HighlightColor;
   occurrence_index: number;
+  note_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -540,6 +541,7 @@ export function useCreateHighlight() {
       highlighted_text: string;
       color: HighlightColor;
       occurrence_index: number;
+      note_id?: string;
     }) =>
       apiFetch<{ highlight: StudentHighlight }>(`/submissions/${data.submissionId}/highlights`, {
         method: 'POST',
@@ -547,10 +549,12 @@ export function useCreateHighlight() {
           highlighted_text: data.highlighted_text,
           color: data.color,
           occurrence_index: data.occurrence_index,
+          ...(data.note_id && { note_id: data.note_id }),
         }),
       }),
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ['student-highlights', variables.submissionId] });
+      qc.invalidateQueries({ queryKey: ['student-notes', variables.submissionId] });
     },
   });
 }
@@ -558,16 +562,20 @@ export function useCreateHighlight() {
 export function useUpdateHighlight() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { submissionId: string; highlightId: string; color: HighlightColor }) =>
+    mutationFn: (data: { submissionId: string; highlightId: string; color?: HighlightColor; note_id?: string | null }) =>
       apiFetch<{ highlight: StudentHighlight }>(
         `/submissions/${data.submissionId}/highlights/${data.highlightId}`,
         {
           method: 'PATCH',
-          body: JSON.stringify({ color: data.color }),
+          body: JSON.stringify({
+            ...(data.color !== undefined && { color: data.color }),
+            ...(data.note_id !== undefined && { note_id: data.note_id }),
+          }),
         },
       ),
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ['student-highlights', variables.submissionId] });
+      qc.invalidateQueries({ queryKey: ['student-notes', variables.submissionId] });
     },
   });
 }
@@ -582,6 +590,7 @@ export function useDeleteHighlight() {
       ),
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ['student-highlights', variables.submissionId] });
+      qc.invalidateQueries({ queryKey: ['student-notes', variables.submissionId] });
     },
   });
 }

@@ -50,6 +50,12 @@ export async function POST(
 
   const occurrenceIndex = typeof body.occurrence_index === 'number' ? body.occurrence_index : 0;
 
+  // Validate optional note_id
+  const noteId = body.note_id ?? null;
+  if (noteId !== null && (typeof noteId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(noteId))) {
+    return NextResponse.json({ error: 'Invalid note_id' }, { status: 400 });
+  }
+
   // Look up the student profile for the current user
   const { data: profile } = await supabase
     .from('student_profiles')
@@ -69,6 +75,7 @@ export async function POST(
       highlighted_text: highlightedText,
       color: body.color,
       occurrence_index: occurrenceIndex,
+      ...(noteId && { note_id: noteId }),
     })
     .select()
     .single();

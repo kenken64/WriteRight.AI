@@ -2,11 +2,12 @@
 
 import { useState, useCallback } from 'react';
 import { OcrSection } from './ocr-section';
-import { HighlightColorPicker } from './highlight-color-picker';
+import { HighlightColorPicker, type HighlightConfirmPayload } from './highlight-color-picker';
 import {
   useStudentHighlights,
+  useStudentNotes,
   useCreateHighlight,
-  type HighlightColor,
+  useCreateNote,
 } from '@/lib/api/client';
 import type { TextSelection } from './highlightable-text';
 
@@ -22,25 +23,51 @@ export function OcrSectionWithHighlights({
   imageUrls,
 }: OcrSectionWithHighlightsProps) {
   const { data: highlights = [] } = useStudentHighlights(submissionId);
+  const { data: notes = [] } = useStudentNotes(submissionId);
   const createHighlight = useCreateHighlight();
+  const createNote = useCreateNote();
   const [pickerState, setPickerState] = useState<TextSelection | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   const handleTextSelected = useCallback((selection: TextSelection) => {
     setPickerState(selection);
   }, []);
 
-  const handleColorPick = useCallback(
-    (color: HighlightColor) => {
+  const handleConfirm = useCallback(
+    async (payload: HighlightConfirmPayload) => {
       if (!pickerState) return;
-      createHighlight.mutate({
-        submissionId,
-        highlighted_text: pickerState.text,
-        color,
-        occurrence_index: pickerState.occurrenceIndex,
-      });
-      setPickerState(null);
+      setIsCreating(true);
+
+      try {
+        let noteId: string | undefined;
+
+        // If creating a new note first, do that
+        if ('newNoteContent' in payload && payload.newNoteContent) {
+          const result = await createNote.mutateAsync({
+            submissionId,
+            content: payload.newNoteContent,
+            priority: 'medium',
+          });
+          noteId = result.note.id;
+        } else if ('noteId' in payload && payload.noteId) {
+          noteId = payload.noteId;
+        }
+
+        // Create the highlight
+        await createHighlight.mutateAsync({
+          submissionId,
+          highlighted_text: pickerState.text,
+          color: payload.color,
+          occurrence_index: pickerState.occurrenceIndex,
+          ...(noteId && { note_id: noteId }),
+        });
+
+        setPickerState(null);
+      } finally {
+        setIsCreating(false);
+      }
     },
-    [pickerState, submissionId, createHighlight],
+    [pickerState, submissionId, createHighlight, createNote],
   );
 
   const handleDismiss = useCallback(() => {
@@ -60,8 +87,10 @@ export function OcrSectionWithHighlights({
       {pickerState && (
         <HighlightColorPicker
           rect={pickerState.rect}
-          onPick={handleColorPick}
+          notes={notes}
+          onConfirm={handleConfirm}
           onDismiss={handleDismiss}
+          isCreating={isCreating}
         />
       )}
     </>

@@ -53,6 +53,16 @@ export function StudentNotesPanel({ submissionId }: StudentNotesPanelProps) {
     return priorityOrder[a.priority] - priorityOrder[b.priority];
   });
 
+  // Group highlights by note
+  const highlightsByNote = new Map<string | null, StudentHighlight[]>();
+  for (const h of highlights) {
+    const key = h.note_id;
+    const arr = highlightsByNote.get(key) ?? [];
+    arr.push(h);
+    highlightsByNote.set(key, arr);
+  }
+  const unlinkedHighlights = highlightsByNote.get(null) ?? [];
+
   const handleCreate = () => {
     const trimmed = newContent.trim();
     if (!trimmed || createNote.isPending) return;
@@ -79,12 +89,6 @@ export function StudentNotesPanel({ submissionId }: StudentNotesPanelProps) {
   const handleDeleteHighlight = (highlightId: string) => {
     deleteHighlight.mutate({ submissionId, highlightId });
   };
-
-  // Group highlights by color
-  const highlightsByColor = highlights.reduce<Record<string, StudentHighlight[]>>((acc, h) => {
-    (acc[h.color] ??= []).push(h);
-    return acc;
-  }, {});
 
   return (
     <div className="mt-6 rounded-lg border bg-white p-4">
@@ -164,87 +168,104 @@ export function StudentNotesPanel({ submissionId }: StudentNotesPanelProps) {
         </div>
       )}
 
-      {!isLoading && notes.length === 0 && !showForm && (
+      {!isLoading && notes.length === 0 && highlights.length === 0 && !showForm && (
         <p className="mt-3 text-center text-xs text-muted-foreground">
           Add notes to track corrections you need to make.
         </p>
       )}
 
+      {/* Notes with their associated highlights */}
       {sortedNotes.length > 0 && (
         <div className="mt-3 space-y-2">
-          {sortedNotes.map((note) => (
-            <div
-              key={note.id}
-              className={`flex items-start gap-2 rounded-md border p-2 transition-opacity ${
-                note.is_done ? 'opacity-50' : ''
-              }`}
-            >
-              <input
-                type="checkbox"
-                checked={note.is_done}
-                onChange={() => handleToggleDone(note.id, note.is_done)}
-                className="mt-1 h-4 w-4 rounded border-gray-300 accent-primary cursor-pointer"
-              />
-              <div className="flex-1 min-w-0">
-                <p
-                  className={`text-sm ${note.is_done ? 'line-through text-muted-foreground' : ''}`}
-                >
-                  {note.content}
-                </p>
-              </div>
-              <span
-                className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                  PRIORITY_CONFIG[note.priority].color
+          {sortedNotes.map((note) => {
+            const noteHighlights = highlightsByNote.get(note.id) ?? [];
+            return (
+              <div
+                key={note.id}
+                className={`rounded-md border p-2 transition-opacity ${
+                  note.is_done ? 'opacity-50' : ''
                 }`}
               >
-                {PRIORITY_CONFIG[note.priority].label}
-              </span>
-              <button
-                onClick={() => handleDelete(note.id)}
-                className="shrink-0 rounded p-1 text-muted-foreground hover:bg-red-50 hover:text-red-500 transition-colors"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ))}
+                <div className="flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    checked={note.is_done}
+                    onChange={() => handleToggleDone(note.id, note.is_done)}
+                    className="mt-1 h-4 w-4 rounded border-gray-300 accent-primary cursor-pointer"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`text-sm ${note.is_done ? 'line-through text-muted-foreground' : ''}`}
+                    >
+                      {note.content}
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                      PRIORITY_CONFIG[note.priority].color
+                    }`}
+                  >
+                    {PRIORITY_CONFIG[note.priority].label}
+                  </span>
+                  <button
+                    onClick={() => handleDelete(note.id)}
+                    className="shrink-0 rounded p-1 text-muted-foreground hover:bg-red-50 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                {/* Highlights linked to this note */}
+                {noteHighlights.length > 0 && (
+                  <div className="mt-1.5 ml-6 flex flex-wrap gap-1">
+                    {noteHighlights.map((h) => (
+                      <span
+                        key={h.id}
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] ${HIGHLIGHT_COLOR_CONFIG[h.color].swatch} border border-gray-200 group`}
+                      >
+                        <span className="max-w-[120px] truncate italic">
+                          &ldquo;{h.highlighted_text}&rdquo;
+                        </span>
+                        <button
+                          onClick={() => handleDeleteHighlight(h.id)}
+                          className="opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity"
+                        >
+                          <Trash2 className="h-2.5 w-2.5" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {highlights.length > 0 && (
+      {/* Unlinked highlights */}
+      {unlinkedHighlights.length > 0 && (
         <div className="mt-4 border-t pt-4">
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-2">
             <div className="h-4 w-4 rounded bg-yellow-200 border border-gray-300" />
-            <span className="font-medium text-sm">Highlights</span>
-            <span className="text-xs text-muted-foreground">{highlights.length}</span>
+            <span className="font-medium text-sm">Unlinked Highlights</span>
+            <span className="text-xs text-muted-foreground">{unlinkedHighlights.length}</span>
           </div>
-          <div className="space-y-3">
-            {(Object.keys(HIGHLIGHT_COLOR_CONFIG) as HighlightColor[])
-              .filter((color) => highlightsByColor[color]?.length)
-              .map((color) => (
-                <div key={color}>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <div className={`h-3 w-3 rounded-full ${HIGHLIGHT_COLOR_CONFIG[color].swatch} border border-gray-300`} />
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {HIGHLIGHT_COLOR_CONFIG[color].label}
-                    </span>
-                  </div>
-                  <div className="space-y-1 pl-4">
-                    {highlightsByColor[color].map((h) => (
-                      <div key={h.id} className="flex items-start gap-1.5 group">
-                        <p className="flex-1 min-w-0 text-xs text-muted-foreground line-clamp-2 italic">
-                          &ldquo;{h.highlighted_text}&rdquo;
-                        </p>
-                        <button
-                          onClick={() => handleDeleteHighlight(h.id)}
-                          className="shrink-0 rounded p-0.5 text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-500 transition-all"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+          <div className="space-y-1 pl-1">
+            {unlinkedHighlights.map((h) => (
+              <div key={h.id} className="flex items-start gap-1.5 group">
+                <div
+                  className={`mt-1 h-3 w-3 shrink-0 rounded-full ${HIGHLIGHT_COLOR_CONFIG[h.color].swatch} border border-gray-300`}
+                />
+                <p className="flex-1 min-w-0 text-xs text-muted-foreground line-clamp-2 italic">
+                  &ldquo;{h.highlighted_text}&rdquo;
+                </p>
+                <button
+                  onClick={() => handleDeleteHighlight(h.id)}
+                  className="shrink-0 rounded p-0.5 text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-500 transition-all"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       )}
