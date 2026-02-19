@@ -164,14 +164,21 @@ serve(async (req: Request) => {
       }, { onConflict: 'student_id,achievement_id' });
     }
 
-    // Update streak
-    const today = new Date().toISOString().slice(0, 10);
+    // Update streak (use Singapore timezone so dates match student's local day)
+    const sgNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Singapore' }));
+    const today = sgNow.getFullYear() + '-' +
+      String(sgNow.getMonth() + 1).padStart(2, '0') + '-' +
+      String(sgNow.getDate()).padStart(2, '0');
     const lastDate = streak?.last_submission_date;
     let newStreak = streak?.current_streak ?? 0;
     let longest = streak?.longest_streak ?? 0;
 
     if (lastDate !== today) {
-      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      const sgYesterday = new Date(sgNow);
+      sgYesterday.setDate(sgYesterday.getDate() - 1);
+      const yesterday = sgYesterday.getFullYear() + '-' +
+        String(sgYesterday.getMonth() + 1).padStart(2, '0') + '-' +
+        String(sgYesterday.getDate()).padStart(2, '0');
       newStreak = lastDate === yesterday ? newStreak + 1 : 1;
       longest = Math.max(longest, newStreak);
 

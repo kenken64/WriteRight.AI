@@ -78,6 +78,19 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     await admin.from("submissions").update({ status: "evaluated", updated_at: new Date().toISOString() }).eq("id", id);
 
+    // Check achievements (fire-and-forget, don't block response)
+    try {
+      const studentId = submission.assignment?.student_id;
+      if (studentId) {
+        admin.functions.invoke('check-achievements', {
+          body: { studentId },
+        }).catch((achErr: any) => console.error(`[evaluate] Achievement check failed:`, achErr.message));
+        console.log(`[evaluate] Achievement check triggered for ${studentId}`);
+      }
+    } catch (achErr: any) {
+      console.error(`[evaluate] Achievement check failed:`, achErr.message);
+    }
+
     return NextResponse.json({ evaluation: evalData }, { status: 201 });
   } catch (err: any) {
     await admin.from("submissions").update({ status: "failed", failure_reason: err.message, updated_at: new Date().toISOString() }).eq("id", id);

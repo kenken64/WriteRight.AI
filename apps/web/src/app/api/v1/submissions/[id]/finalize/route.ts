@@ -207,20 +207,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
       // Step 3: Check achievements (fire-and-forget)
       try {
-        // Resolve student_profiles.id from auth user id
-        const { data: profile } = await admin
-          .from('student_profiles')
-          .select('id')
-          .eq('user_id', user.id)
-          .single();
-        const studentId = profile?.id;
+        // Resolve student from the submission's assignment (works regardless of who triggered finalization)
+        const studentId = submission.assignment?.student_id;
         if (studentId) {
           await admin.functions.invoke('check-achievements', {
             body: { studentId },
           });
           console.log(`[finalize:bg] Achievement check completed for ${studentId}`);
         } else {
-          console.warn(`[finalize:bg] No student profile found for user ${user.id}, skipping achievement check`);
+          console.warn(`[finalize:bg] No student_id on assignment, skipping achievement check`);
         }
       } catch (achErr: any) {
         console.error(`[finalize:bg] Achievement check failed:`, achErr.message);

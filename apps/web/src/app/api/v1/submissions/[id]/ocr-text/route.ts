@@ -111,6 +111,19 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
       await admin.from("submissions").update({ status: "evaluated", updated_at: new Date().toISOString() }).eq("id", id);
       console.log(`[ocr-text:bg] Re-evaluation complete for ${id} — score: ${result.totalScore}, band: ${result.band}`);
+
+      // Check achievements (fire-and-forget)
+      try {
+        const studentId = data.assignment?.student_id;
+        if (studentId) {
+          await admin.functions.invoke('check-achievements', {
+            body: { studentId },
+          });
+          console.log(`[ocr-text:bg] Achievement check completed for ${studentId}`);
+        }
+      } catch (achErr: any) {
+        console.error(`[ocr-text:bg] Achievement check failed:`, achErr.message);
+      }
     } catch (err: any) {
       console.error(`[ocr-text:bg] Re-evaluation error:`, err.message);
       await admin.from("submissions").update({ status: "failed", failure_reason: err.message, updated_at: new Date().toISOString() }).eq("id", id);
