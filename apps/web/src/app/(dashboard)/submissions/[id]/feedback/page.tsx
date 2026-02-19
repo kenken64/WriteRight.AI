@@ -23,7 +23,7 @@ export default async function FeedbackPage({ params }: Props) {
   if (!evaluation) notFound();
 
   return (
-    <div className="mx-auto w-full max-w-5xl">
+    <div className="mx-auto w-full max-w-7xl">
       <Link href={`/submissions/${id}`} className="text-sm text-muted-foreground hover:underline">
         ← Back to Submission
       </Link>

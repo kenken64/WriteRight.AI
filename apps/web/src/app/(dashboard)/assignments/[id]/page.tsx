@@ -18,7 +18,7 @@ export default async function AssignmentDetailPage({ params }: Props) {
   if (!assignment) notFound();
 
   return (
-    <div className="mx-auto w-full max-w-5xl">
+    <div className="mx-auto w-full max-w-7xl">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
           <Link href="/assignments" className="text-sm text-muted-foreground hover:underline">
