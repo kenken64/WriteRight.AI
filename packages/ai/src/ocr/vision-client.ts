@@ -1,4 +1,5 @@
 import { visionCompletion } from "../shared/openai-client";
+import { MODEL_VISION } from "../shared/model-config";
 import { OCRError } from "../shared/errors";
 import type { OcrResult, OcrPage } from "../shared/types";
 import { calculateConfidence } from "./confidence";
@@ -27,7 +28,7 @@ export async function extractTextFromImages(imageUrls: string[]): Promise<OcrRes
         OCR_SYSTEM_PROMPT,
         [imageUrls[i]],
         `Transcribe page ${i + 1} of the handwritten essay. Convert to well-formatted Markdown.`,
-        { maxTokens: 3000, tracking: { operation: "ocr" } }
+        { model: MODEL_VISION, maxTokens: 3000, tracking: { operation: "ocr" } }
       );
 
       const confidence = calculateConfidence(text);

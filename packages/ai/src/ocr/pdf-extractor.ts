@@ -2,6 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pdfParse: (buffer: Buffer) => Promise<{ numpages: number; text: string }> = require("pdf-parse/lib/pdf-parse");
 import { visionCompletion } from "../shared/openai-client";
+import { MODEL_VISION } from "../shared/model-config";
 import { OCRError } from "../shared/errors";
 import { calculateConfidence } from "./confidence";
 import type { OcrResult, OcrPage } from "../shared/types";
@@ -57,7 +58,7 @@ export async function extractTextFromPdf(fileUrl: string): Promise<OcrResult> {
       OCR_SYSTEM_PROMPT,
       [fileUrl],
       `This is a scanned PDF with ${pdfData.numpages} page(s). Transcribe all handwritten text from every page. Output only the text.`,
-      { maxTokens: 4000 },
+      { model: MODEL_VISION, maxTokens: 4000 },
     );
 
     const confidence = calculateConfidence(text);

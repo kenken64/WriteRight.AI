@@ -66,7 +66,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         for (const ref of submission.image_refs as string[]) {
           const { data, error: urlErr } = await admin.storage
             .from("submissions")
-            .createSignedUrl(ref, 600);
+            .createSignedUrl(ref, 3600);
           if (urlErr || !data?.signedUrl) {
             console.error(`[finalize:bg] Signed URL failed for "${ref}":`, urlErr?.message ?? "no signedUrl returned");
             throw new Error(`Failed to create signed URL for ${ref}: ${urlErr?.message ?? "unknown"}`);
@@ -89,6 +89,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         const ocrResult = await extractTextFromFiles(fileUrls, detectedType);
         ocrText = ocrResult.text;
         console.log(`[finalize:bg] OCR complete — text length: ${ocrText?.length ?? 0}, confidence: ${ocrResult.confidence}`);
+
+        if (!ocrText?.trim()) {
+          console.error(`[finalize:bg] OCR returned empty text — failing submission`);
+          await admin.from("submissions").update({
+            status: "failed",
+            failure_reason: "OCR extracted no text from the uploaded file(s). Please re-upload clearer images.",
+            updated_at: new Date().toISOString(),
+          }).eq("id", id);
+          return;
+        }
 
         // Copy original images to ocr-images bucket for permanent storage
         const ocrImageUrls: string[] = [];
