@@ -3,6 +3,7 @@ import { after } from "next/server";
 import { createServerSupabaseClient, createAdminSupabaseClient } from "@/lib/supabase/server";
 import { sanitizeInput } from "@/lib/middleware/sanitize";
 import { evaluateEssay } from "@writeright/ai/marking/engine";
+import { runPreEvaluationChecks } from "@writeright/ai/marking/pre-checks";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -52,6 +53,27 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   after(async () => {
     console.log(`[ocr-text:bg] Re-evaluating submission ${id} after OCR text edit`);
     try {
+      // Pre-evaluation validation
+      console.log(`[ocr-text:bg] Running pre-evaluation checks...`);
+      const preCheck = await runPreEvaluationChecks({
+        essayText: sanitizedText,
+        prompt: data.assignment?.prompt ?? "",
+        essayType: data.assignment?.essay_type ?? "continuous",
+        guidingPoints: data.assignment?.guiding_points ?? undefined,
+        submissionId: id,
+      });
+
+      if (!preCheck.passed) {
+        console.error(`[ocr-text:bg] Pre-check failed: ${preCheck.issues.join(", ")}`);
+        await admin.from("submissions").update({
+          status: "failed",
+          failure_reason: preCheck.issues.join(". "),
+          updated_at: new Date().toISOString(),
+        }).eq("id", id);
+        return;
+      }
+      console.log(`[ocr-text:bg] Pre-checks passed — language: ${preCheck.language}, topic: ${preCheck.topicAlignmentScore.toFixed(2)}`);
+
       await admin.from("submissions").update({ status: "evaluating", updated_at: new Date().toISOString() }).eq("id", id);
 
       const result = await evaluateEssay({

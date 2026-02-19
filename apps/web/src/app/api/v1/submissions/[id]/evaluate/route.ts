@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient, createAdminSupabaseClient } from "@/lib/supabase/server";
 import { evaluateEssay } from "@writeright/ai/marking/engine";
+import { runPreEvaluationChecks } from "@writeright/ai/marking/pre-checks";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -19,6 +20,24 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!submission) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (!submission.ocr_text) {
     return NextResponse.json({ error: "OCR not complete" }, { status: 400 });
+  }
+
+  // Pre-evaluation validation
+  const preCheck = await runPreEvaluationChecks({
+    essayText: submission.ocr_text,
+    prompt: submission.assignment?.prompt ?? "",
+    essayType: submission.assignment?.essay_type ?? "continuous",
+    guidingPoints: submission.assignment?.guiding_points ?? undefined,
+    submissionId: id,
+  });
+
+  if (!preCheck.passed) {
+    await admin.from("submissions").update({
+      status: "failed",
+      failure_reason: preCheck.issues.join(". "),
+      updated_at: new Date().toISOString(),
+    }).eq("id", id);
+    return NextResponse.json({ error: preCheck.issues.join(". ") }, { status: 422 });
   }
 
   // Update status to evaluating

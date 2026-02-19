@@ -50,7 +50,9 @@ export default async function SubmissionDetailPage({ params }: Props) {
   }
 
   const status = formatStatus(submission.status);
-  const statusDescription = getStatusDescription(submission.status);
+  const statusDescription = submission.status === 'failed' && submission.failure_reason
+    ? submission.failure_reason
+    : getStatusDescription(submission.status);
 
   return (
     <div className="mx-auto w-full max-w-5xl">

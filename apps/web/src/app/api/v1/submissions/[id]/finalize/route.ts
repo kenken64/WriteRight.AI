@@ -3,6 +3,7 @@ import { after } from "next/server";
 import { createServerSupabaseClient, createAdminSupabaseClient } from "@/lib/supabase/server";
 import { extractTextFromFiles } from "@writeright/ai/ocr/vision-client";
 import { evaluateEssay } from "@writeright/ai/marking/engine";
+import { runPreEvaluationChecks } from "@writeright/ai/marking/pre-checks";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -136,6 +137,27 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       } else {
         console.log(`[finalize:bg] OCR text already present — skipping (length: ${ocrText.length})`);
       }
+
+      // Step 1.5: Pre-evaluation validation
+      console.log(`[finalize:bg] Running pre-evaluation checks...`);
+      const preCheck = await runPreEvaluationChecks({
+        essayText: ocrText,
+        prompt: submission.assignment?.prompt ?? "",
+        essayType: submission.assignment?.essay_type ?? "continuous",
+        guidingPoints: submission.assignment?.guiding_points ?? undefined,
+        submissionId: id,
+      });
+
+      if (!preCheck.passed) {
+        console.error(`[finalize:bg] Pre-check failed: ${preCheck.issues.join(", ")}`);
+        await admin.from("submissions").update({
+          status: "failed",
+          failure_reason: preCheck.issues.join(". "),
+          updated_at: new Date().toISOString(),
+        }).eq("id", id);
+        return;
+      }
+      console.log(`[finalize:bg] Pre-checks passed — language: ${preCheck.language}, topic: ${preCheck.topicAlignmentScore.toFixed(2)}`);
 
       // Step 2: Auto-evaluate
       console.log(`[finalize:bg] Starting evaluation...`);
