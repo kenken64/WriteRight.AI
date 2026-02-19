@@ -19,14 +19,34 @@ Convert the handwritten text to well-formatted Markdown. Preserve the document s
 - Spelling errors (preserve them exactly, do not correct)
 Use appropriate Markdown syntax. Output only the Markdown-formatted transcription, no commentary.`;
 
+/**
+ * Download a remote image and return it as a base64 data URL.
+ * This avoids OpenAI's server-side download which can timeout on signed URLs.
+ */
+async function toBase64DataUrl(imageUrl: string): Promise<string> {
+  // Already a data URL — pass through
+  if (imageUrl.startsWith("data:")) return imageUrl;
+
+  const response = await fetch(imageUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to download image: ${response.status} ${response.statusText}`);
+  }
+  const contentType = response.headers.get("content-type") || "image/jpeg";
+  const buffer = Buffer.from(await response.arrayBuffer());
+  return `data:${contentType};base64,${buffer.toString("base64")}`;
+}
+
 export async function extractTextFromImages(imageUrls: string[]): Promise<OcrResult> {
   const pages: OcrPage[] = [];
 
   for (let i = 0; i < imageUrls.length; i++) {
     try {
+      // Download image and convert to base64 to avoid OpenAI URL-fetch timeouts
+      const dataUrl = await toBase64DataUrl(imageUrls[i]);
+
       const text = await visionCompletion(
         OCR_SYSTEM_PROMPT,
-        [imageUrls[i]],
+        [dataUrl],
         `Transcribe page ${i + 1} of the handwritten essay. Convert to well-formatted Markdown.`,
         { model: MODEL_VISION, maxTokens: 3000, tracking: { operation: "ocr" } }
       );
