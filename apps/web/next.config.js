@@ -14,7 +14,7 @@ const nextConfig = {
     ],
   },
   outputFileTracingRoot: path.join(__dirname, '../../'),
-  serverExternalPackages: ['@google-cloud/vision'],
+  serverExternalPackages: ['@google-cloud/vision', 'pdf-to-img', 'pdfjs-dist', 'canvas'],
 };
 
 module.exports = nextConfig;
