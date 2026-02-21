@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Editor } from "@tiptap/react";
 import {
   Bold,
@@ -72,10 +72,30 @@ export function EditorToolbar({
   versionNumber,
   submitting,
 }: EditorToolbarProps) {
+  const [confirmUnder, setConfirmUnder] = useState(false);
+
+  const hardMax = Math.ceil(wordMax * 1.2);
+  const isOverHard = wordCount > hardMax;
+  const isUnderMin = wordCount < wordMin;
+  const submitDisabled = submitting || wordCount < 10 || isOverHard;
+
+  const handleSubmitClick = () => {
+    if (isUnderMin) {
+      setConfirmUnder(true);
+      return;
+    }
+    onSubmit();
+  };
+
+  const handleConfirmSubmit = () => {
+    setConfirmUnder(false);
+    onSubmit();
+  };
+
   if (!editor) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-3 py-2">
+    <div className="relative flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-3 py-2">
       {/* Formatting */}
       <div className="flex items-center gap-0.5 border-r border-gray-200 pr-2">
         <ToolBtn
@@ -146,14 +166,43 @@ export function EditorToolbar({
       </button>
 
       {/* Submit */}
-      <button
-        onClick={onSubmit}
-        disabled={submitting || wordCount < 10}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-green-600 text-white hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-      >
-        <Send className="h-3.5 w-3.5" />
-        {submitting ? "Submitting..." : "Submit"}
-      </button>
+      <div className="relative">
+        <button
+          onClick={handleSubmitClick}
+          disabled={submitDisabled}
+          title={isOverHard ? `Exceeds ${hardMax} words (max ${wordMax} + 20% buffer)` : undefined}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-green-600 text-white hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          <Send className="h-3.5 w-3.5" />
+          {submitting ? "Submitting..." : "Submit"}
+        </button>
+
+        {/* Under-minimum confirmation popover */}
+        {confirmUnder && (
+          <div className="absolute right-0 top-full mt-2 z-50 w-72 rounded-lg border border-amber-200 bg-amber-50 p-3 shadow-lg">
+            <p className="text-sm text-amber-800 font-medium">
+              Your essay is under the minimum ({wordCount}/{wordMin} words).
+            </p>
+            <p className="text-xs text-amber-600 mt-1">
+              Are you sure you want to submit?
+            </p>
+            <div className="flex justify-end gap-2 mt-3">
+              <button
+                onClick={() => setConfirmUnder(false)}
+                className="px-2.5 py-1 text-xs font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmSubmit}
+                className="px-2.5 py-1 text-xs font-medium rounded-md bg-amber-500 text-white hover:bg-amber-600"
+              >
+                Submit anyway
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
